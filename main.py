@@ -17,16 +17,16 @@ PILLNAME, PILLDOSAGE, PILLTIME = range(3)
 
 
 def start_command(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Welcome, try to add new pill via /new.')
+    update.message.reply_text('Привет, добавь новое напоминание /new.')
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Help me, please!')
+    update.message.reply_text('Пидоры, помогите!')
 
 
 def list_command(update: Update, context: CallbackContext) -> None:
     for ntf in config.NOTIFICATIONS:
-        update.message.reply_text(f"You have to take {ntf['name']} ({ntf['dosage']}) pill at {ntf['time']}.")
+        update.message.reply_text(f"Тебе нужно выпить {ntf['name']} ({ntf['dosage']}) в {ntf['time']}.")
 
 
 def clean_command(update: Update, context: CallbackContext) -> None:
@@ -36,13 +36,13 @@ def clean_command(update: Update, context: CallbackContext) -> None:
     for job in current_jobs:
         job.schedule_removal()
 
-    update.message.reply_text('Welcome, try to add new pill via /new.')
+    update.message.reply_text('Добавь новое напоминание /new.')
 
 
 def new_command(update: Update, context: CallbackContext) -> int:
     context.user_data['new_command'] = {}
     update.message.reply_text(
-        'Please, send me pill name.\nIf you want to cancel this operation type /cancel.',
+        'Скинь название таблеток.\nДля отмены используй /cancel.',
     )
     return PILLNAME
 
@@ -50,7 +50,7 @@ def new_command(update: Update, context: CallbackContext) -> int:
 def set_pill_name(update: Update, context: CallbackContext) -> int:
     context.user_data['new_command']['name'] = update.message.text
     update.message.reply_text(
-        'Send me the dosage of the next pill intake (like that 0.25mg).',
+        'В какой дозе нужно пить? (формат 0.25mg/1g)',
     )
     return PILLDOSAGE
 
@@ -58,7 +58,7 @@ def set_pill_name(update: Update, context: CallbackContext) -> int:
 def set_pill_dosage(update: Update, context: CallbackContext) -> int:
     context.user_data['new_command']['dosage'] = update.message.text
     update.message.reply_text(
-        'Send me the time of the next pill intake (like that 15:30). After that you can add some more.',
+        'В какое время тебе напомнить? (формат 15:30)',
     )
     return PILLTIME
 
@@ -69,7 +69,7 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
     send_to_scheduler(chat_id, context.user_data['new_command'], context.job_queue)
     config.NOTIFICATIONS.append(context.user_data['new_command'])
     update.message.reply_text(
-        'Add more time for notifications or save this list.',
+        'Напоминание добавлено, ждите...',
     )
     return ConversationHandler.END
 
@@ -77,8 +77,10 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
 def alarm(context: CallbackContext) -> None:
     job = context.job
     logger.info("Chat ids %d: %s", job.context, context.args)
-    context.bot.send_message(job.context['chat_id'],
-        text=f"You have to take {job.context['name']} ({job.context['dosage']}) pill at {job.context['time']}.")
+    context.bot.send_message(
+        job.context['chat_id'],
+        text=f"Тэкс, ты будешь пить {job.context['name']} ({job.context['dosage']}) в {job.context['time']} или как?",
+    )
 
 
 def send_to_scheduler(chat_id: int, data: dict, job_queue: JobQueue):
@@ -97,7 +99,7 @@ def send_to_scheduler(chat_id: int, data: dict, job_queue: JobQueue):
 
 
 def cancel(update: Update, context: CallbackContext) -> int:
-    update.message.reply_text('State cancelled')
+    update.message.reply_text('А все так хорошо начиналось...')
     return ConversationHandler.END
 
 
