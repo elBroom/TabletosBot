@@ -2,3 +2,4 @@
 /config.py
 /tabletos_bot.db
 __pycache__
+reload_db.py

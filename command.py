@@ -1,13 +1,30 @@
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
-from db import add_notifications, del_notifications, get_notifications, get_notification, Notification, NoResultFound
+from db import (
+    add_notification, del_notifications, get_notifications, get_notification, enable_notification, disable_notification,
+    Notification, NoResultFound
+)
 from datatype import PILLNAME, PILLDOSAGE, PILLTIME
 from utils import send_to_scheduler, stop_to_scheduler
 
 
+def __get_notification(update: Update,context: CallbackContext) -> Notification:
+    chat_id = update.message.chat_id
+    try:
+        return get_notification(context.bot_data['db_session'], int(context.args[0]), chat_id)
+    except (LookupError, ValueError):
+        update.message.reply_text('Не верный формат num')
+    except NoResultFound:
+        update.message.reply_text('Напоминание не найдено.')
+
+
 def start_command(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Привет, добавь новое напоминание /new.')
+    update.message.reply_text('Привет, давай знакомится. Для начала настрой меня /setting.')
+
+
+def setting_command(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text('Напоминание остановлены.')
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
@@ -22,17 +39,8 @@ def list_command(update: Update, context: CallbackContext) -> None:
 
 
 def delete_command(update: Update, context: CallbackContext) -> None:
-    chat_id = update.message.chat_id
-    try:
-        nid = int(context.args[0])
-    except (LookupError, ValueError):
-        update.message.reply_text('Не верный формат num')
-        return
-
-    try:
-        notification = get_notification(context.bot_data['db_session'], nid, chat_id)
-    except NoResultFound:
-        update.message.reply_text('Напоминание не найдено.')
+    notification = __get_notification(update, context)
+    if not notification:
         return
 
     stop_to_scheduler(notification.id, context.job_queue)
@@ -50,22 +58,34 @@ def clean_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Добавь новое напоминание /new.')
 
 
-def stop_command(update: Update, context: CallbackContext) -> None:
-    chat_id = update.message.chat_id
-    try:
-        nid = int(context.args[0])
-    except (LookupError, ValueError):
-        update.message.reply_text('Не верный формат num')
+def mod_on_command(update: Update, context: CallbackContext) -> None:
+    notification = __get_notification(update, context)
+    if not notification:
         return
 
-    try:
-        notification = get_notification(context.bot_data['db_session'], nid, chat_id)
-    except NoResultFound:
-        update.message.reply_text('Напоминание не найдено.')
+    enable_notification(context.bot_data['db_session'], notification)
+    send_to_scheduler(notification, context.job_queue, alarm)
+    update.message.reply_text('Напоминание добавлено.')
+
+
+def mod_off_command(update: Update, context: CallbackContext) -> None:
+    notification = __get_notification(update, context)
+    if not notification:
         return
 
     stop_to_scheduler(notification.id, context.job_queue)
+    disable_notification(context.bot_data['db_session'], notification)
     update.message.reply_text('Напоминание остановлено.')
+
+
+def stop_command(update: Update, context: CallbackContext) -> None:
+    chat_id = update.message.chat_id
+
+    for ntf in get_notifications(context.bot_data['db_session'], chat_id):
+        disable_notification(context.bot_data['db_session'], ntf)
+        stop_to_scheduler(ntf.id, context.job_queue)
+
+    update.message.reply_text('Напоминание остановлены.')
 
 
 def new_command(update: Update, context: CallbackContext) -> int:
@@ -99,7 +119,7 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
         dosage=context.user_data['new_command']['dosage'],
         time=update.message.text,
     )
-    add_notifications(context.bot_data['db_session'], notification)
+    add_notification(context.bot_data['db_session'], notification)
     send_to_scheduler(notification, context.job_queue, alarm)
 
     update.message.reply_text('Напоминание добавлено, ждите...')
