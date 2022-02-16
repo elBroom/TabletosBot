@@ -1,2 +1,4 @@
 .idea/
 /config.py
+/tabletos_bot.db
+__pycache__
