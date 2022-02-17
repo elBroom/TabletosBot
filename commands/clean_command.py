@@ -1,8 +1,8 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from db import del_notifications, get_notifications
-from utils import stop_to_scheduler
+from models.notification import del_notifications, get_notifications
+from utils.scheduler import stop_to_scheduler
 
 
 def clean_command(update: Update, context: CallbackContext) -> None:

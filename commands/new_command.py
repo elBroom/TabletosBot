@@ -1,9 +1,9 @@
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
-from db import add_notification, Notification
-from commands.alert import alert
-from utils import send_to_scheduler
+from models.notification import add_notification, Notification
+from commands.alert_command import alert
+from utils.scheduler import send_to_scheduler
 
 
 PILLNAME, PILLDOSAGE, PILLTIME = range(3)

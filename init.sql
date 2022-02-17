@@ -6,9 +6,10 @@ CREATE TABLE IF NOT EXISTS `user_settings` (
 
   `chat_id` INT(12) NOT NULL,
   `name` VARCHAR(32) NOT NULL,
-  `timezone` VARCHAR(32) NOT NULL
+  `timezone` VARCHAR(32) NOT NULL,
+  `interval` INT(4) NOT NULL DEFAULT 20
 );
-CREATE INDEX us_chat_id_idx ON `user_settings` (`chat_id`);
+CREATE UNIQUE INDEX us_chat_id_idx ON `user_settings` (`chat_id`);
 
 DROP TABLE IF EXISTS `notifications`;
 CREATE TABLE IF NOT EXISTS `notifications` (
@@ -33,7 +34,6 @@ CREATE TABLE IF NOT EXISTS `history` (
 
   `chat_id` INT(12) NOT NULL,
   `name` VARCHAR(32) NOT NULL,
-  `time` CHAR(5) NOT NULL,
   `dosage` VARCHAR(32) NOT NULL
 );
 CREATE INDEX hst_chat_id_idx ON `history` (`chat_id`);

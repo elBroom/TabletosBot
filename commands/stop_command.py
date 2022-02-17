@@ -1,8 +1,8 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from db import get_notifications, disable_notification
-from utils import stop_to_scheduler
+from models.notification import get_notifications, disable_notification
+from utils.scheduler import stop_to_scheduler
 
 
 def stop_command(update: Update, context: CallbackContext) -> None:

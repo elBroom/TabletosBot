@@ -4,10 +4,12 @@ import config
 
 from telegram.ext import Updater
 
-from commands.alert import alert
-from db import DB, get_notifications
+from commands.alert_command import alert
+from db import DB
 from handlers import handlers
-from utils import send_to_scheduler
+from models.notification import get_notifications
+
+from utils.scheduler import send_to_scheduler
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
