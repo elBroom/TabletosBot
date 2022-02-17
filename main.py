@@ -13,8 +13,9 @@ from utils.scheduler import send_to_scheduler
 
 
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO,
+    filename='TabletosBot.log',
 )
 logger = logging.getLogger(__name__)
 

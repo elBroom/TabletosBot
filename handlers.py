@@ -59,7 +59,9 @@ handlers = [
     CallbackQueryHandler(list_command.delete_query, pattern=f'^{list_command.DELETE} [0-9]+$'),
 
     ConversationHandler(
-        entry_points=[CallbackQueryHandler(alert_command.take_photo_query, pattern=f'^{alert_command.TAKEPHOTO} [0-9]+$')],
+        entry_points=[
+            CallbackQueryHandler(alert_command.take_photo_query, pattern=f'^{alert_command.TAKEPHOTO} [0-9]+$'),
+        ],
         states={
             alert_command.CHECK: [MessageHandler(Filters.photo, alert_command.check_photo)],
         },

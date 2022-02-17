@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Boolean, Column, Integer, String, DateTime
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
@@ -8,4 +8,4 @@ Base = declarative_base()
 
 class DB:
     def __init__(self, path):
-        self.session = Session(bind=create_engine(path+'?check_same_thread=false'))
+        self.session = Session(bind=create_engine(f'{path}?check_same_thread=false'))
