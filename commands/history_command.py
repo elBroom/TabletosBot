@@ -18,7 +18,7 @@ def history_command(update: Update, context: CallbackContext) -> None:
 
     for hst in history:
         update.message.reply_text(
-            text=f'Ты выпил {hst.name} ({hst.dosage}) в {hst.created_at}',
+            text=f'Ты выпил {hst.name} ({hst.dosage}) в {hst.datetime}',
             reply_markup=InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton(text='Удалить', callback_data=f'{DELETE} {hst.id}'),

@@ -1,3 +1,6 @@
+import datetime
+import pytz
+
 from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
@@ -15,9 +18,14 @@ class History(Base):
     name = Column(String)
     dosage = Column(String)
 
+    @property
+    def datetime(self):
+        return self.created_at.strftime("%Y-%m-%d %H:%M")
 
-def add_history(session: Session, ntf: 'Notification'):
+
+def add_history(session: Session, ntf: 'Notification', timezone: str):
     session.add(History(
+        created_at=datetime.datetime.now(pytz.timezone(timezone)),
         chat_id=ntf.chat_id,
         name=ntf.name,
         dosage=ntf.dosage,

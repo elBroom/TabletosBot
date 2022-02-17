@@ -20,7 +20,7 @@ def report_command(update: Update, context: CallbackContext) -> None:
         writer = csv.writer(f)
         writer.writerow(['date', 'name', 'dosage'])
         for hst in history:
-            writer.writerow([hst.created_at, hst.name, hst.dosage])
+            writer.writerow([hst.datetime, hst.name, hst.dosage])
 
     update.message.reply_document(document=open(filename, 'rb'), filename='report.csv')
     os.remove(filename)

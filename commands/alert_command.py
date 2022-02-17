@@ -50,7 +50,8 @@ def take_query(update: Update, context: CallbackContext) -> None:
         return
 
     stop_to_scheduler_once(notification.id, context.job_queue)
-    add_history(context.bot_data['db_session'], notification)
+    setting = get_setting(context, notification.chat_id)
+    add_history(context.bot_data['db_session'], notification, setting.timezone)
 
     query = update.callback_query
     query.message.reply_text('Запись добавлена в дневник.')
@@ -77,7 +78,8 @@ def check_photo(update: Update, context: CallbackContext) -> int:
 
     notification = context.user_data['take_photo_query']
     stop_to_scheduler_once(notification.id, context.job_queue)
-    add_history(context.bot_data['db_session'], notification)
+    setting = get_setting(context, notification.chat_id)
+    add_history(context.bot_data['db_session'], notification, setting.timezone)
 
     os.remove(file)
     update.message.reply_text('Запись добавлена в дневник.')
