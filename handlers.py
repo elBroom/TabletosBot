@@ -6,7 +6,7 @@ from telegram.ext import (
 
 from commands import (
     start_command, help_command, list_command, history_command,
-    setting_command, new_command, alert_command,
+    setting_command, new_command, alert_command, report_command,
     clean_command, stop_command,
 )
 
@@ -18,6 +18,7 @@ handlers = [
     CommandHandler('help', help_command.help_command),
     CommandHandler('list', list_command.list_command),
     CommandHandler('history', history_command.history_command),
+    CommandHandler('report', report_command.report_command),
     CommandHandler('clean', clean_command.clean_command),
     CommandHandler('stop', stop_command.stop_command),
     ConversationHandler(
