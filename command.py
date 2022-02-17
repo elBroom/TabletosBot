@@ -1,22 +1,28 @@
-from telegram import Update
+import re
+
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update, Message
 from telegram.ext import CallbackContext, ConversationHandler
 
 from db import (
     add_notification, del_notifications, get_notifications, get_notification, enable_notification, disable_notification,
     Notification, NoResultFound
 )
-from datatype import PILLNAME, PILLDOSAGE, PILLTIME
+from datatype import PILLNAME, PILLDOSAGE, PILLTIME, LISTBUTTON
 from utils import send_to_scheduler, stop_to_scheduler
 
 
-def __get_notification(update: Update,context: CallbackContext) -> Notification:
-    chat_id = update.message.chat_id
+def __get_notification(update: Update, context: CallbackContext) -> Notification:
+    query = update.callback_query
+    query.answer()
+
+    chat_id = query.message.chat_id
     try:
-        return get_notification(context.bot_data['db_session'], int(context.args[0]), chat_id)
+        nid = re.match(r"^(on|off|delete) (?P<nid>\d+)$", query.data).group('nid')
+        return get_notification(context.bot_data['db_session'], int(nid), chat_id)
     except (LookupError, ValueError):
-        update.message.reply_text('Не верный формат num')
+        query.message.reply_text('Не верный формат num')
     except NoResultFound:
-        update.message.reply_text('Напоминание не найдено.')
+        query.message.reply_text('Напоминание не найдено.')
 
 
 def start_command(update: Update, context: CallbackContext) -> None:
@@ -31,21 +37,27 @@ def help_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Пидоры, помогите!')
 
 
-def list_command(update: Update, context: CallbackContext) -> None:
+def list_command(update: Update, context: CallbackContext) -> int:
     chat_id = update.message.chat_id
+
     for ntf in get_notifications(context.bot_data['db_session'], chat_id):
-        update.message.reply_text(f'Тебе нужно выпить {ntf.name} ({ntf.dosage}) в {ntf.time}. [{ntf.id}]')
-    update.message.reply_text(f'Для удаления используй /delete num')
-
-
-def delete_command(update: Update, context: CallbackContext) -> None:
-    notification = __get_notification(update, context)
-    if not notification:
-        return
-
-    stop_to_scheduler(notification.id, context.job_queue)
-    del_notifications(context.bot_data['db_session'], notification)
-    update.message.reply_text('Напоминание удалено.')
+        buttons = []
+        if ntf.enabled:
+            buttons.append(
+                InlineKeyboardButton(text='Отключить', callback_data=f'off {ntf.id}')
+            )
+        else:
+            buttons.append(
+                InlineKeyboardButton(text='Включить', callback_data=f'on {ntf.id}')
+            )
+        buttons.append(
+            InlineKeyboardButton(text='Удалить', callback_data=f'delete {ntf.id}')
+        )
+        update.message.reply_text(
+            f'Тебе нужно выпить {ntf.name} ({ntf.dosage}) в {ntf.time}',
+            reply_markup=InlineKeyboardMarkup([buttons]),
+        )
+    return LISTBUTTON
 
 
 def clean_command(update: Update, context: CallbackContext) -> None:
@@ -58,24 +70,46 @@ def clean_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Добавь новое напоминание /new.')
 
 
-def mod_on_command(update: Update, context: CallbackContext) -> None:
+def mod_on_query(update: Update, context: CallbackContext) -> None:
     notification = __get_notification(update, context)
     if not notification:
-        return
+        return ConversationHandler.END
 
     enable_notification(context.bot_data['db_session'], notification)
     send_to_scheduler(notification, context.job_queue, alarm)
-    update.message.reply_text('Напоминание добавлено.')
+
+    query = update.callback_query
+    query.answer()
+    query.message.reply_text('Напоминание добавлено.')
+    return ConversationHandler.END
 
 
-def mod_off_command(update: Update, context: CallbackContext) -> None:
+def mod_off_query(update: Update, context: CallbackContext) -> int:
     notification = __get_notification(update, context)
     if not notification:
-        return
+        return ConversationHandler.END
 
     stop_to_scheduler(notification.id, context.job_queue)
     disable_notification(context.bot_data['db_session'], notification)
-    update.message.reply_text('Напоминание остановлено.')
+
+    query = update.callback_query
+    query.answer()
+    query.message.reply_text('Напоминание остановлено.')
+    return ConversationHandler.END
+
+
+def delete_query(update: Update, context: CallbackContext) -> int:
+    notification = __get_notification(update, context)
+    if not notification:
+        return ConversationHandler.END
+
+    stop_to_scheduler(notification.id, context.job_queue)
+    del_notifications(context.bot_data['db_session'], notification)
+
+    query = update.callback_query
+    query.answer()
+    query.message.reply_text('Напоминание удалено.')
+    return ConversationHandler.END
 
 
 def stop_command(update: Update, context: CallbackContext) -> None:
@@ -122,15 +156,19 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
     add_notification(context.bot_data['db_session'], notification)
     send_to_scheduler(notification, context.job_queue, alarm)
 
-    update.message.reply_text('Напоминание добавлено, ждите...')
+    update.message.reply_text('Напоминание добавлено, ждем-с...')
     return ConversationHandler.END
 
 
 def alarm(context: CallbackContext) -> None:
-    job = context.job
+    notification = context.job.context
     context.bot.send_message(
-        job.context['chat_id'],
-        text=f"Тэкс, ты будешь пить {job.context['name']} ({job.context['dosage']}) в {job.context['time']} или как?",
+        notification.chat_id,
+        text=f"Тэкс, тебе надо выпить таблетки {notification.name} ({notification.dosage}).",
+        reply_markup=InlineKeyboardMarkup([[
+            InlineKeyboardButton(text='Выпил', callback_data=f'take {notification.id}'),
+            InlineKeyboardButton(text='Отложить', callback_data=f'postpound {notification.id}'),
+        ]]),
     )
 
 
