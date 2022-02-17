@@ -1,3 +1,6 @@
+import pytz
+
+from tzwhere import tzwhere
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler
 
@@ -17,7 +20,9 @@ def setting_command(update: Update, context: CallbackContext) -> int:
     context.user_data['setting_command'] = {}
     update.message.reply_text('Давай настроимся на одну волну\nДля отмены используй /cancel.')
     update.message.reply_text(
-        'Введи свою timizone в формате Europe/Moscow или пропусти для установки времени по Москве',
+        'Введи свою timizone в формате Europe/Moscow.\n'
+        'Так же можешь прислать свою локацию.\n'
+        'Или пропусти шаг, тогда время будет московским.',
         reply_markup=markup_skip,
     )
     return TIMEZONE
@@ -25,28 +30,36 @@ def setting_command(update: Update, context: CallbackContext) -> int:
 
 def skip_timezone(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
-        'Что бы отправлять дневник выпитых таблеток, введи свой email',
-        reply_markup=markup_skip,
-    )
-    return EMAIL
-
-
-def set_timezone(update: Update, context: CallbackContext) -> int:
-    context.user_data['setting_command']['timezone'] = update.message.text
-    return skip_timezone(update, context)
-
-
-def skip_email(update: Update, context: CallbackContext) -> int:
-    update.message.reply_text(
         'Если вдруг ты был занят, через сколько минут напомнить снова выпить таблетки?',
         reply_markup=ReplyKeyboardMarkup([[10, 15, 20, 30]], one_time_keyboard=True),
     )
     return INTERVAL
 
 
-def set_email(update: Update, context: CallbackContext) -> int:
-    context.user_data['setting_command']['email'] = update.message.text
-    return skip_email(update, context)
+def set_timezone(update: Update, context: CallbackContext) -> int:
+    try:
+        pytz.timezone(update.message.text)
+    except pytz.exceptions.UnknownTimeZoneError:
+        update.message.reply_text('Не читаемый регион, давай еще раз')
+        return TIMEZONE
+
+    context.user_data['setting_command']['timezone'] = update.message.text
+    return skip_timezone(update, context)
+
+
+def set_timezone_from_location(update: Update, context: CallbackContext) -> int:
+    timezone_str = tzwhere.tzwhere().tzNameAt(
+        latitude=update.message.location.latitude,
+        longitude=update.message.location.longitude,
+    )
+    try:
+        pytz.timezone(timezone_str)
+    except pytz.exceptions.UnknownTimeZoneError:
+        update.message.reply_text('Не читаемы регион, давай еще раз')
+        return TIMEZONE
+
+    context.user_data['setting_command']['timezone'] = timezone_str
+    return skip_timezone(update, context)
 
 
 def set_interval(update: Update, context: CallbackContext) -> int:

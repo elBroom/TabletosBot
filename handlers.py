@@ -27,10 +27,7 @@ handlers = [
             setting_command.TIMEZONE: [
                 MessageHandler(Filters.regex('^skip|пропустить$'), setting_command.skip_timezone),
                 MessageHandler(Filters.regex('^\w+/\w+$'), setting_command.set_timezone),
-            ],
-            setting_command.EMAIL: [
-                MessageHandler(Filters.regex('^skip|пропустить$'), setting_command.skip_email),
-                MessageHandler(Filters.regex(regex_email), setting_command.set_email),
+                MessageHandler(Filters.location, setting_command.set_timezone_from_location),
             ],
             setting_command.INTERVAL: [
                 MessageHandler(Filters.regex('^[0-9]+$'), setting_command.set_interval),

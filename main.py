@@ -3,6 +3,7 @@ import logging
 import config
 
 from telegram.ext import Updater
+import sentry_sdk
 
 from commands.alert_command import alert
 from db import DB
@@ -21,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
+    if config.SENTRY_DSN:
+        sentry_sdk.init(config.SENTRY_DSN, traces_sample_rate=1.0)
+
     updater = Updater(config.TOKEN)
 
     dispatcher = updater.dispatcher
