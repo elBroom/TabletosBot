@@ -60,7 +60,10 @@ handlers = [
             CallbackQueryHandler(alert_command.take_photo_query, pattern=f'^{alert_command.TAKEPHOTO} [0-9]+$'),
         ],
         states={
-            alert_command.CHECK: [MessageHandler(Filters.photo, alert_command.check_photo)],
+            alert_command.CHECK: [
+                MessageHandler(Filters.photo, alert_command.check_photo),
+                MessageHandler(Filters.regex('^skip|пропустить$'), alert_command.skip_photo),
+            ],
         },
         fallbacks=[],
     ),

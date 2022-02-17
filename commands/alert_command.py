@@ -1,8 +1,9 @@
 import os
 
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, Update
 from telegram.ext import CallbackContext, ConversationHandler
 
+from models.notification import Notification
 from models.history import add_history
 from utils.img import valid_img
 from utils.scheduler import send_to_scheduler_once, stop_to_scheduler_once
@@ -44,15 +45,18 @@ def alert(context: CallbackContext) -> None:
     )
 
 
+def save_history(context: CallbackContext, notification: Notification):
+    stop_to_scheduler_once(notification.id, context.job_queue)
+    setting = get_setting(context, notification.chat_id)
+    add_history(context.bot_data['db_session'], notification, setting.timezone)
+
+
 def take_query(update: Update, context: CallbackContext) -> None:
     notification = get_notification_from_query(update, context)
     if not notification:
         return
 
-    stop_to_scheduler_once(notification.id, context.job_queue)
-    setting = get_setting(context, notification.chat_id)
-    add_history(context.bot_data['db_session'], notification, setting.timezone)
-
+    save_history(context, notification)
     query = update.callback_query
     query.message.reply_text('Запись добавлена в дневник.')
 
@@ -64,7 +68,10 @@ def take_photo_query(update: Update, context: CallbackContext) -> int:
 
     context.user_data['take_photo_query'] = notification
     query = update.callback_query
-    query.message.reply_text('Пришли фото')
+    query.message.reply_text(
+        'Пришли фото',
+        reply_markup=ReplyKeyboardMarkup([['пропустить']], one_time_keyboard=True),
+    )
     return CHECK
 
 
@@ -77,11 +84,17 @@ def check_photo(update: Update, context: CallbackContext) -> int:
         return CHECK
 
     notification = context.user_data['take_photo_query']
-    stop_to_scheduler_once(notification.id, context.job_queue)
-    setting = get_setting(context, notification.chat_id)
-    add_history(context.bot_data['db_session'], notification, setting.timezone)
+    save_history(context, notification)
 
     os.remove(file)
+    update.message.reply_text('Запись добавлена в дневник.')
+    return ConversationHandler.END
+
+
+def skip_photo(update: Update, context: CallbackContext) -> int:
+    notification = context.user_data['take_photo_query']
+    save_history(context, notification)
+
     update.message.reply_text('Запись добавлена в дневник.')
     return ConversationHandler.END
 
