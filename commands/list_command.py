@@ -5,6 +5,7 @@ from commands.alert_command import alert
 from models.notification import del_notifications, get_notifications, enable_notification, disable_notification
 from utils.scheduler import send_to_scheduler, stop_to_scheduler
 from utils.query import get_notification_from_query
+from utils.user_data import get_setting
 
 
 OFF, ON, DELETE = 'off', 'on', 'delete_pill'
@@ -41,9 +42,10 @@ def mod_on_query(update: Update, context: CallbackContext) -> None:
     notification = get_notification_from_query(update, context)
     if not notification:
         return
-
     enable_notification(context.bot_data['db_session'], notification)
-    send_to_scheduler(notification, context.job_queue, alert)
+
+    setting = get_setting(context, notification.chat_id)
+    send_to_scheduler(setting, notification, context.job_queue, alert)
 
     query = update.callback_query
     query.message.reply_text('Напоминание добавлено.')

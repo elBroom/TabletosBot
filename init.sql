@@ -5,9 +5,13 @@ CREATE TABLE IF NOT EXISTS `user_settings` (
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   `chat_id` INT(12) NOT NULL,
-  `name` VARCHAR(32) NOT NULL,
-  `timezone` VARCHAR(32) NOT NULL,
-  `interval` INT(4) NOT NULL DEFAULT 20
+  `username` VARCHAR(32) NOT NULL,
+  `language` VARCHAR(3) NOT NULL DEFAULT 'ru',
+  `timezone` VARCHAR(32) NOT NULL DEFAULT 'Europe/Moscow',
+  `email` VARCHAR(32) NOT NULL DEFAULT '',
+  `interval_alert` INT(4) NOT NULL DEFAULT 20,
+  `take_photo` BOOLEAN NOT NULL DEFAULT FALSE,
+  `urgency_enabled` BOOLEAN NOT NULL DEFAULT TRUE
 );
 CREATE UNIQUE INDEX us_chat_id_idx ON `user_settings` (`chat_id`);
 
@@ -22,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   `time` CHAR(5) NOT NULL,
   `dosage` VARCHAR(32) NOT NULL,
 
-  `enabled` BOOLEAN NOT NULL
+  `enabled` BOOLEAN NOT NULL DEFAULT TRUE
 );
 CREATE INDEX nfs_chat_id_idx ON `notifications` (`chat_id`);
 

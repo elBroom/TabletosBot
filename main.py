@@ -8,8 +8,9 @@ from commands.alert_command import alert
 from db import DB
 from handlers import handlers
 from models.notification import get_notifications
-
+from models.setting import get_setting
 from utils.scheduler import send_to_scheduler
+
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
@@ -31,7 +32,9 @@ def main() -> None:
     updater.job_queue.scheduler.start()
     for ntf in get_notifications(db.session):
         if ntf.enabled:
-            send_to_scheduler(ntf, updater.job_queue, alert)
+            # TODO don't make query
+            setting = get_setting(db.session, ntf.chat_id)
+            send_to_scheduler(setting, ntf, updater.job_queue, alert)
 
     updater.start_polling()
     updater.idle()

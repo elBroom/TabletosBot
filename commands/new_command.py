@@ -4,9 +4,10 @@ from telegram.ext import CallbackContext, ConversationHandler
 from models.notification import add_notification, Notification
 from commands.alert_command import alert
 from utils.scheduler import send_to_scheduler
+from utils.user_data import get_setting
 
 
-PILLNAME, PILLDOSAGE, PILLTIME = range(3)
+NAME, DOSAGE, TIME = range(3)
 
 
 def new_command(update: Update, context: CallbackContext) -> int:
@@ -14,7 +15,7 @@ def new_command(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
         'Скинь название таблеток.\nДля отмены используй /cancel.',
     )
-    return PILLNAME
+    return NAME
 
 
 def set_pill_name(update: Update, context: CallbackContext) -> int:
@@ -22,7 +23,7 @@ def set_pill_name(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
         'В какой дозе нужно пить? (формат 25мг/0.25г)',
     )
-    return PILLDOSAGE
+    return DOSAGE
 
 
 def set_pill_dosage(update: Update, context: CallbackContext) -> int:
@@ -30,7 +31,7 @@ def set_pill_dosage(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
         'В какое время тебе напомнить? (формат 15:30)',
     )
-    return PILLTIME
+    return TIME
 
 
 def set_pill_time(update: Update, context: CallbackContext) -> int:
@@ -41,7 +42,9 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
         time=update.message.text,
     )
     add_notification(context.bot_data['db_session'], notification)
-    send_to_scheduler(notification, context.job_queue, alert)
+
+    setting = get_setting(context, notification.chat_id)
+    send_to_scheduler(setting, notification, context.job_queue, alert)
 
     update.message.reply_text('Напоминание добавлено, ждем-с...')
     return ConversationHandler.END
