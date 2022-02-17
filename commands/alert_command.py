@@ -2,11 +2,11 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext
 
 from models.history import add_history
-from utils.scheduler import send_to_scheduler_once
+from utils.scheduler import send_to_scheduler_once, stop_to_scheduler_once
 from utils.query import get_notification_from_query
 
 
-TAKE, FORGOT, LATER = 'take', 'forgot', 'later'
+TAKE, FORGOT, LATER  = 'take', 'forgot', 'later'
 
 
 def alert(context: CallbackContext) -> None:
@@ -18,12 +18,10 @@ def alert(context: CallbackContext) -> None:
             [
                 InlineKeyboardButton(text='Выпил', callback_data=f'{TAKE} {notification.id}'),
                 InlineKeyboardButton(text='Забыл', callback_data=f'{FORGOT} {notification.id}'),
-            ],
-            [
-                InlineKeyboardButton(text='Отложить', callback_data=f'{LATER} {notification.id}'),
             ]
         ]),
     )
+    send_to_scheduler_once(notification, context.job_queue, alert)
 
 
 def take_query(update: Update, context: CallbackContext) -> None:
@@ -31,6 +29,7 @@ def take_query(update: Update, context: CallbackContext) -> None:
     if not notification:
         return
 
+    stop_to_scheduler_once(notification.id, context.job_queue)
     add_history(context.bot_data['db_session'], notification)
 
     query = update.callback_query
@@ -38,6 +37,12 @@ def take_query(update: Update, context: CallbackContext) -> None:
 
 
 def forgot_query(update: Update, context: CallbackContext) -> None:
+    notification = get_notification_from_query(update, context)
+    if not notification:
+        return
+
+    stop_to_scheduler_once(notification.id, context.job_queue)
+
     query = update.callback_query
     query.message.reply_text('Печально.')
 

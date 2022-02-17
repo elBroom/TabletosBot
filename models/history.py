@@ -1,5 +1,6 @@
 from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 
 from db import Base
 
@@ -8,7 +9,7 @@ class History(Base):
     __tablename__ = 'history'
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime)
+    created_at = Column(DateTime, server_default=func.now())
 
     chat_id = Column(Integer)
     name = Column(String)
@@ -30,3 +31,12 @@ def get_history(session: Session, chat_id=None):
     if chat_id:
         qs = qs.filter_by(chat_id=chat_id)
     return qs.all()
+
+
+def get_history_row(session: Session, hid: int, chat_id: int):
+    return session.query(History).filter_by(id=hid, chat_id=chat_id).one()
+
+
+def del_history_row(session: Session, log: History):
+    session.delete(log)
+    session.commit()

@@ -7,7 +7,7 @@ from utils.scheduler import send_to_scheduler, stop_to_scheduler
 from utils.query import get_notification_from_query
 
 
-OFF, ON, DELETE = 'off', 'on', 'delete'
+OFF, ON, DELETE = 'off', 'on', 'delete_pill'
 
 
 def list_command(update: Update, context: CallbackContext) -> None:

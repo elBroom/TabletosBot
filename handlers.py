@@ -1,5 +1,5 @@
 from telegram.ext import (
-    CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler, InlineQueryHandler,
+    CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler,
 )
 
 from commands import (
@@ -11,12 +11,12 @@ from commands import (
 
 handlers = [
     CommandHandler('start', start_command.start_command),
-    CommandHandler('setting', setting_command.setting_command),
     CommandHandler('help', help_command.help_command),
     CommandHandler('list', list_command.list_command),
     CommandHandler('history', history_command.history_command),
     CommandHandler('clean', clean_command.clean_command),
     CommandHandler('stop', stop_command.stop_command),
+    CommandHandler('setting', setting_command.setting_command),
     ConversationHandler(
         entry_points=[CommandHandler('new', new_command.new_command)],
         states={
@@ -34,4 +34,6 @@ handlers = [
     CallbackQueryHandler(alert_command.take_query, pattern=f'^{alert_command.TAKE} [0-9]+$'),
     CallbackQueryHandler(alert_command.forgot_query, pattern=f'^{alert_command.FORGOT} [0-9]+$'),
     CallbackQueryHandler(alert_command.later_query, pattern=f'^{alert_command.LATER} [0-9]+$'),
+
+    CallbackQueryHandler(history_command.delete_log_query, pattern=f'^{history_command.DELETE} [0-9]+$'),
 ]
