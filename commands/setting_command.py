@@ -4,7 +4,7 @@ from tzwhere import tzwhere
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler
 
-from models.setting import add_setting, Setting
+from models.setting import add_setting, get_setting, Setting
 from utils.user_data import set_setting
 
 
@@ -89,17 +89,19 @@ def set_urgency(update: Update, context: CallbackContext) -> int:
         urgency_enabled = True
     user_data = context.user_data['setting_command']
 
-    setting = Setting(
-        chat_id=update.message.chat_id,
-        username=update.message.chat.username,
-        timezone=user_data.get('timezone', 'Europe/Moscow'),
-        email=user_data.get('email', ''),
-        interval_alert=int(user_data.get('interval_alert', 20)),
-        take_photo=bool(user_data.get('photo', False)),
-        urgency_enabled=urgency_enabled,
-    )
+    setting = get_setting(context.bot_data['db_session'], update.message.chat_id)
+    setting.username = update.message.chat.username
+    if 'timezone' in user_data:
+        setting.timezone = user_data['timezone']
+    if 'interval_alert' in user_data:
+        setting.interval_alert = user_data['interval_alert']
+    setting.take_photo = user_data['photo']
+    setting.urgency_enabled = urgency_enabled
+
+    context.bot.logger.info(f'Add setting for {setting.chat_id}')
     add_setting(context.bot_data['db_session'], setting)
     set_setting(context, setting)
+
     update.message.reply_text('Настройки применены')
     return ConversationHandler.END
 
