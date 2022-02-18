@@ -6,6 +6,10 @@
 ### Запуск:
 ```bash
 docker-compose build
+cp config.example.py config.py
+vim config.py
+# edit config.py
+python3 init_db.py
 docker-compose up -d
 ```
 
