@@ -38,6 +38,7 @@ def alert(context: CallbackContext) -> None:
             InlineKeyboardButton(text='Отложить', callback_data=f'{LATER} {notification.id}'),
         )
 
+    context.bot.logger.info(f'Send notification for chat_id: {notification.chat_id}')
     context.bot.send_message(
         notification.chat_id,
         text=f"Тэкс, тебе надо выпить таблетки {notification.name} ({notification.dosage}).",
@@ -48,6 +49,7 @@ def alert(context: CallbackContext) -> None:
 def save_history(context: CallbackContext, notification: Notification):
     stop_to_scheduler_once(notification.id, context.job_queue)
     setting = get_setting(context, notification.chat_id)
+    context.bot.logger.info(f'Add row to history for chat_id: {setting.chat_id}')
     add_history(context.bot_data['db_session'], notification, setting.timezone)
 
 
@@ -118,5 +120,6 @@ def later_query(update: Update, context: CallbackContext) -> None:
     setting = get_setting(context, notification.chat_id)
     send_to_scheduler_once(setting, notification, context.job_queue, alert)
 
+    context.bot.logger.info(f'Notification delayed for chat_id: {notification.chat_id}')
     query = update.callback_query
     query.message.reply_text('Напоминание перенесено.')

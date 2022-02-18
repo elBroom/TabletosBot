@@ -1,9 +1,11 @@
 import logging
-
+import sentry_sdk
 import config
 
+from pytz import timezone
+from datetime import datetime
+
 from telegram.ext import Updater
-import sentry_sdk
 
 from commands.alert_command import alert
 from db import DB
@@ -18,6 +20,7 @@ logging.basicConfig(
     level=logging.INFO,
     filename='TabletosBot.log',
 )
+logging.Formatter.converter = lambda *args: datetime.now(tz=timezone(config.TIMEZONE)).timetuple()
 logger = logging.getLogger(__name__)
 
 

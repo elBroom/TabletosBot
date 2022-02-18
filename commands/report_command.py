@@ -22,5 +22,6 @@ def report_command(update: Update, context: CallbackContext) -> None:
         for hst in history:
             writer.writerow([hst.datetime, hst.name, hst.dosage])
 
+    context.bot.logger.info(f'Send report for chat_id: {chat_id}')
     update.message.reply_document(document=open(filename, 'rb'), filename='report.csv')
     os.remove(filename)
