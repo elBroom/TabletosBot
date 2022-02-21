@@ -45,7 +45,9 @@ handlers = [
         entry_points=[CommandHandler('new', new_command.new_command)],
         states={
             new_command.NAME: [MessageHandler(Filters.regex('^\w+$'), new_command.set_pill_name)],
-            new_command.DOSAGE: [MessageHandler(Filters.regex('^[0-9.,]+(мг|г|mg|g)$'), new_command.set_pill_dosage)],
+            new_command.DOSAGE: [MessageHandler(
+                Filters.regex('^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?(мг|г|mg|g)$'), new_command.set_pill_dosage,
+            )],
             new_command.TIME: [MessageHandler(Filters.regex('^[0-2][0-9]:[0-6][0-9]$'), new_command.set_pill_time)],
         },
         fallbacks=[CommandHandler('cancel', new_command.cancel)],

@@ -63,7 +63,16 @@ def set_timezone_from_location(update: Update, context: CallbackContext) -> int:
 
 
 def set_interval(update: Update, context: CallbackContext) -> int:
-    context.user_data['setting_command']['interval'] = update.message.text
+    try:
+        interval = int(update.message.text)
+    except ValueError:
+        update.message.reply_text('Не похоже на число, давай еще раз')
+        return TIMEZONE
+    if interval < 1 or interval > 300:
+        update.message.reply_text('Давай установим разумное время')
+        return TIMEZONE
+
+    context.user_data['setting_command']['interval'] = interval
     update.message.reply_text(
         'После каждой принятой таблетки я могу спрашивать фото, нннадо?',
         reply_markup=markup_bool,

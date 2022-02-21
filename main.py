@@ -29,7 +29,6 @@ def main() -> None:
         sentry_sdk.init(config.SENTRY_DSN, traces_sample_rate=1.0)
 
     updater = Updater(config.TOKEN, workers=100)
-
     dispatcher = updater.dispatcher
     for handler in handlers:
         dispatcher.add_handler(handler)
