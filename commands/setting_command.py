@@ -90,7 +90,6 @@ def set_urgency(update: Update, context: CallbackContext) -> int:
     user_data = context.user_data['setting_command']
 
     setting = get_setting(context.bot_data['db_session'], update.message.chat_id)
-    setting.username = update.message.chat.username
     if 'timezone' in user_data:
         setting.timezone = user_data['timezone']
     if 'interval_alert' in user_data:
