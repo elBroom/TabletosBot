@@ -4,7 +4,7 @@ from tzwhere import tzwhere
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler
 
-from models.setting import add_setting, get_setting, Setting
+from models.setting import add_setting, get_setting
 from utils.user_data import set_setting
 
 

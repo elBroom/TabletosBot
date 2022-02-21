@@ -3,8 +3,6 @@ from telegram.ext import CallbackContext, ConversationHandler
 
 from models.notification import Notification
 from models.history import add_history
-from commands.alert_command import alert
-from utils.scheduler import send_to_scheduler
 from utils.user_data import get_setting
 
 

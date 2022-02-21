@@ -1,4 +1,6 @@
 # TabletosBot
+[![Build Status](https://circleci.com/gh/elBroom/TabletosBot.svg?style=shield)](https://circleci.com/gh/elBroom/TabletosBot)
+
 Телеграмм бот напоминающий пить таблеточки и журналирующий принятую дозировку.
 
 Ссылка на бот: https://t.me/TabletossBot

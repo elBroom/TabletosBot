@@ -2,7 +2,7 @@ version: "2"
 services:
   bot:
     build: .
-    container_name: TabletosBot
+    container_name: tabletosbot_bot
     volumes:
       - .:/src
     command: python main.py

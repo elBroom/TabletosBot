@@ -6,6 +6,10 @@ from sqlalchemy.orm.exc import NoResultFound
 Base = declarative_base()
 
 
+class NoResultFoundErr(NoResultFound):
+    pass
+
+
 class DB:
     def __init__(self, path):
         self.session = Session(bind=create_engine(f'{path}?check_same_thread=false'))
