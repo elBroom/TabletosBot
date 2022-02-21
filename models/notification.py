@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String, DateTime
 from sqlalchemy.orm import Session
 
 from db import Base
@@ -13,6 +13,7 @@ class Notification(Base):
     time = Column(String)
     dosage = Column(String)
     enabled = Column(Boolean, default=True)
+    next_t = Column(DateTime)
 
 
 def add_notification(session: Session, ntf: Notification):
@@ -22,7 +23,7 @@ def add_notification(session: Session, ntf: Notification):
 
 
 def get_notifications(session: Session, chat_id=None):
-    qs = session.query(Notification)
+    qs = session.query(Notification).order_by(Notification.time)
     if chat_id:
         qs = qs.filter_by(chat_id=chat_id)
     return qs.all()
@@ -44,4 +45,9 @@ def disable_notification(session: Session, ntf: Notification):
 
 def del_notifications(session: Session, ntf: Notification):
     session.delete(ntf)
+    session.commit()
+
+
+def set_next_notification(session: Session, ntf: Notification, time: 'datetime'):
+    ntf.next_t = time
     session.commit()

@@ -20,12 +20,16 @@ class History(Base):
 
     @property
     def datetime(self):
-        return self.created_at.strftime("%Y-%m-%d %H:%M")
+        return self.created_at.strftime('%Y-%m-%d %H:%M')
 
 
-def add_history(session: Session, ntf: 'Notification', timezone: str):
+def add_history(session: Session, ntf: 'Notification', timezone: str, time: str = ''):
+    if not time:
+        created_at = datetime.datetime.now(pytz.timezone(timezone))
+    else:
+        created_at = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M').replace(tzinfo=pytz.timezone(timezone))
     session.add(History(
-        created_at=datetime.datetime.now(pytz.timezone(timezone)),
+        created_at=created_at,
         chat_id=ntf.chat_id,
         name=ntf.name,
         dosage=ntf.dosage,
@@ -35,7 +39,7 @@ def add_history(session: Session, ntf: 'Notification', timezone: str):
 
 
 def get_history(session: Session, chat_id=None):
-    qs = session.query(History)
+    qs = session.query(History).order_by(History.created_at)
     if chat_id:
         qs = qs.filter_by(chat_id=chat_id)
     return qs.all()

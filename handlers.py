@@ -7,10 +7,13 @@ from telegram.ext import (
 from commands import (
     start_command, help_command, list_command, history_command,
     setting_command, new_command, alert_command, report_command,
-    clean_command, stop_command,
+    clean_command, stop_command, add_command,
 )
 
 regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
+regex_dosage = re.compile(r'^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?(мг|г|mg|g)$')
+regex_date = re.compile(r'^202[0-9]-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]$')
+regex_time = re.compile(r'^[0-2][0-9]:[0-5][0-9]$')
 
 
 handlers = [
@@ -45,10 +48,8 @@ handlers = [
         entry_points=[CommandHandler('new', new_command.new_command)],
         states={
             new_command.NAME: [MessageHandler(Filters.regex('^\w+$'), new_command.set_pill_name)],
-            new_command.DOSAGE: [MessageHandler(
-                Filters.regex('^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?(мг|г|mg|g)$'), new_command.set_pill_dosage,
-            )],
-            new_command.TIME: [MessageHandler(Filters.regex('^[0-2][0-9]:[0-6][0-9]$'), new_command.set_pill_time)],
+            new_command.DOSAGE: [MessageHandler(Filters.regex(regex_dosage), new_command.set_pill_dosage)],
+            new_command.TIME: [MessageHandler(Filters.regex(regex_time), new_command.set_pill_time)],
         },
         fallbacks=[CommandHandler('cancel', new_command.cancel)],
     ),
@@ -74,4 +75,13 @@ handlers = [
     CallbackQueryHandler(alert_command.later_query, pattern=f'^{alert_command.LATER} [0-9]+$'),
 
     CallbackQueryHandler(history_command.delete_log_query, pattern=f'^{history_command.DELETE} [0-9]+$'),
+    ConversationHandler(
+        entry_points=[CommandHandler('add', add_command.add_command)],
+        states={
+            add_command.NAME: [MessageHandler(Filters.regex('^\w+$'), add_command.set_pill_name)],
+            add_command.DOSAGE: [MessageHandler(Filters.regex(regex_dosage), add_command.set_pill_dosage)],
+            add_command.TIME: [MessageHandler(Filters.regex(regex_date), add_command.set_pill_time)],
+        },
+        fallbacks=[CommandHandler('cancel', add_command.cancel)],
+    )
 ]

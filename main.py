@@ -1,3 +1,4 @@
+import datetime
 import logging
 import sentry_sdk
 import config
@@ -12,7 +13,7 @@ from db import DB
 from handlers import handlers
 from models.notification import get_notifications
 from models.setting import get_setting
-from utils.scheduler import send_to_scheduler
+from utils.scheduler import send_to_scheduler, send_to_scheduler_once
 
 
 logging.basicConfig(
@@ -32,7 +33,7 @@ def main() -> None:
     dispatcher = updater.dispatcher
     for handler in handlers:
         dispatcher.add_handler(handler)
-    dispatcher.add_error_handler(lambda *args: logger.info('Oops!'))
+    # dispatcher.add_error_handler(lambda *args: logger.info('Oops!'))
 
     db = DB(config.DB_PATH)
     dispatcher.bot_data['db_session'] = db.session
@@ -43,6 +44,8 @@ def main() -> None:
             # TODO don't make query
             setting = get_setting(db.session, ntf.chat_id)
             send_to_scheduler(setting, ntf, updater.job_queue, alert)
+            if ntf.next_t and ntf.next_t > datetime.now():
+                send_to_scheduler_once(setting, ntf, updater.job_queue, alert, ntf.next_t - datetime.now())
 
     updater.start_polling()
     updater.idle()

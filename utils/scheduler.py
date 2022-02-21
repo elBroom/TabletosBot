@@ -1,7 +1,7 @@
 import datetime
 import pytz
 
-from telegram.ext import JobQueue
+from telegram.ext import JobQueue, Job
 
 from models.notification import Notification
 from models.setting import Setting
@@ -16,9 +16,13 @@ def send_to_scheduler(setting: Setting, notification: Notification, job_queue: J
     )
 
 
-def send_to_scheduler_once(setting: Setting, notification: Notification, job_queue: JobQueue, callback):
-    job_queue.run_once(
-        callback, datetime.timedelta(minutes=setting.interval_alert), name=f'{notification.id} once',
+def send_to_scheduler_once(
+    setting: Setting, notification: Notification, job_queue: JobQueue, callback, timedelta=None,
+) -> Job:
+    if not timedelta:
+        timedelta = datetime.timedelta(minutes=setting.interval_alert)
+    return job_queue.run_once(
+        callback, timedelta, name=f'{notification.id} once',
         context={'notification': notification, 'setting': setting},
     )
 

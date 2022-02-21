@@ -3,7 +3,7 @@ import os
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, Update
 from telegram.ext import CallbackContext, ConversationHandler
 
-from models.notification import Notification
+from models.notification import Notification, set_next_notification
 from models.history import add_history
 from utils.img import valid_img
 from utils.scheduler import send_to_scheduler_once, stop_to_scheduler_once
@@ -29,7 +29,8 @@ def alert(context: CallbackContext) -> None:
         )
 
     if setting.urgency_enabled:
-        send_to_scheduler_once(setting, notification, context.job_queue, alert)
+        job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
+        set_next_notification(context.bot_data['db_session'], notification, job.next_t)
         buttons.append(
             InlineKeyboardButton(text='Забыл', callback_data=f'{FORGOT} {notification.id}'),
         )
@@ -118,7 +119,8 @@ def later_query(update: Update, context: CallbackContext) -> None:
         return
 
     setting = get_setting(context, notification.chat_id)
-    send_to_scheduler_once(setting, notification, context.job_queue, alert)
+    job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
+    set_next_notification(context.bot_data['db_session'], notification, job.next_t)
 
     context.bot.logger.info(f'Notification delayed for chat_id: {notification.chat_id}')
     query = update.callback_query

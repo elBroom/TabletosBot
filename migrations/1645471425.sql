@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS `user_settings`;
 CREATE TABLE IF NOT EXISTS `user_settings` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -13,9 +12,8 @@ CREATE TABLE IF NOT EXISTS `user_settings` (
   `take_photo` BOOLEAN NOT NULL DEFAULT FALSE,
   `urgency_enabled` BOOLEAN NOT NULL DEFAULT TRUE
 );
-CREATE UNIQUE INDEX us_chat_id_idx ON `user_settings` (`chat_id`);
+CREATE UNIQUE INDEX IF NOT EXISTS us_chat_id_idx ON `user_settings` (`chat_id`);
 
-DROP TABLE IF EXISTS `notifications`;
 CREATE TABLE IF NOT EXISTS `notifications` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -28,9 +26,8 @@ CREATE TABLE IF NOT EXISTS `notifications` (
 
   `enabled` BOOLEAN NOT NULL DEFAULT TRUE
 );
-CREATE INDEX nfs_chat_id_idx ON `notifications` (`chat_id`);
+CREATE INDEX IF NOT EXISTS nfs_chat_id_idx ON `notifications` (`chat_id`);
 
-DROP TABLE IF EXISTS `history`;
 CREATE TABLE IF NOT EXISTS `history` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -40,4 +37,4 @@ CREATE TABLE IF NOT EXISTS `history` (
   `name` VARCHAR(32) NOT NULL,
   `dosage` VARCHAR(32) NOT NULL
 );
-CREATE INDEX hst_chat_id_idx ON `history` (`chat_id`);
+CREATE INDEX IF NOT EXISTS hst_chat_id_idx ON `history` (`chat_id`);
