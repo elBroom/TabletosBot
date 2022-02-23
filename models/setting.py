@@ -9,10 +9,7 @@ class Setting(Base):
 
     id = Column(Integer, primary_key=True)
     chat_id = Column(Integer, unique=True)
-    language = Column(String, default='ru')
     timezone = Column(String, default='Europe/Moscow')
-    username = Column(String, default='')
-    email = Column(String, default='')
     interval_alert = Column(Integer, default=20)
     take_photo = Column(Boolean, default=True)
     urgency_enabled = Column(Boolean, default=True)

@@ -1,6 +1,6 @@
 reinstall:
     docker-compose down
-    git checkout master
+    git pull origin master
     docker-compose build
     python3 make_magrations.py
     docker-compose up -d

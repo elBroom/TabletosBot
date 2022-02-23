@@ -4,10 +4,8 @@ CREATE TABLE IF NOT EXISTS `user_settings` (
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   `chat_id` INT(12) NOT NULL,
-  `username` VARCHAR(32) NOT NULL,
   `language` VARCHAR(3) NOT NULL DEFAULT 'ru',
   `timezone` VARCHAR(32) NOT NULL DEFAULT 'Europe/Moscow',
-  `email` VARCHAR(32) NOT NULL DEFAULT '',
   `interval_alert` INT(4) NOT NULL DEFAULT 20,
   `take_photo` BOOLEAN NOT NULL DEFAULT FALSE,
   `urgency_enabled` BOOLEAN NOT NULL DEFAULT TRUE
