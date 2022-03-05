@@ -35,13 +35,13 @@ def main() -> None:
     # dispatcher.add_error_handler(lambda *args: logger.info('Oops!'))
 
     db = DB(config.DB_PATH)
-    dispatcher.bot_data['db_session'] = db.session
+    dispatcher.bot_data['db'] = db
 
     updater.job_queue.scheduler.start()
-    for ntf in get_notifications(db.session):
+    for ntf in get_notifications(db):
         if ntf.enabled:
             # TODO don't make query
-            setting = get_setting(db.session, ntf.chat_id)
+            setting = get_setting(db, ntf.chat_id)
             send_to_scheduler(setting, ntf, updater.job_queue, alert)
             if ntf.next_t and ntf.next_t > datetime.now():
                 send_to_scheduler_once(setting, ntf, updater.job_queue, alert, ntf.next_t - datetime.now())

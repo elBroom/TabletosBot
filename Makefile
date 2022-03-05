@@ -5,10 +5,9 @@ reinstall:
 	python3 make_magrations.py
 	docker-compose up -d
 
-reload:
-	docker-compose down
+restart:
 	git pull origin master --rebase
-	docker-compose up -d
+	docker-compose restart
 
 create_migrations:
 	touch migrations/"$(date +"%s").sql"

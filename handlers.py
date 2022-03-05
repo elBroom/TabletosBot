@@ -81,8 +81,8 @@ handlers = [
             add_command.NAME: [MessageHandler(Filters.regex('^\w+$'), add_command.set_pill_name)],
             add_command.DOSAGE: [MessageHandler(Filters.regex(regex_dosage), add_command.set_pill_dosage)],
             add_command.TIME: [
-                MessageHandler(Filters.regex(regex_date), add_command.set_pill_time),
                 MessageHandler(Filters.regex('^now|сейчас$'), add_command.set_pill_time),
+                MessageHandler(Filters.regex(regex_date), add_command.set_pill_time),
             ],
         },
         fallbacks=[CommandHandler('cancel', add_command.cancel)],

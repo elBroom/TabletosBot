@@ -42,7 +42,7 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
         time=update.message.text,
     )
     context.bot.logger.info(f'Add notification for chat_id: {notification.chat_id}')
-    add_notification(context.bot_data['db_session'], notification)
+    add_notification(context.bot_data['db'], notification)
 
     setting = get_setting(context, notification.chat_id)
     send_to_scheduler(setting, notification, context.job_queue, alert)

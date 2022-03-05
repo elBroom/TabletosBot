@@ -1,7 +1,6 @@
 from sqlalchemy import Boolean, Column, Integer, String, DateTime
-from sqlalchemy.orm import Session
 
-from db import Base
+from db import Base, DB
 
 
 class Notification(Base):
@@ -16,38 +15,45 @@ class Notification(Base):
     next_t = Column(DateTime)
 
 
-def add_notification(session: Session, ntf: Notification):
-    session.add(ntf)
-    session.commit()
+def add_notification(engine: DB, ntf: Notification):
+    with engine.get_session() as session:
+        session.add(ntf)
+        session.commit()
     return ntf.id
 
 
-def get_notifications(session: Session, chat_id=None):
-    qs = session.query(Notification).order_by(Notification.time)
-    if chat_id:
-        qs = qs.filter_by(chat_id=chat_id)
-    return qs.all()
+def get_notifications(engine: DB, chat_id=None):
+    with engine.get_session() as session:
+        qs = session.query(Notification).order_by(Notification.time)
+        if chat_id:
+            qs = qs.filter_by(chat_id=chat_id)
+        return qs.all()
 
 
-def get_notification(session: Session, nid: int, chat_id: int):
-    return session.query(Notification).filter_by(id=nid, chat_id=chat_id).one()
+def get_notification(engine: DB, nid: int, chat_id: int):
+    with engine.get_session() as session:
+        return session.query(Notification).filter_by(id=nid, chat_id=chat_id).one()
 
 
-def enable_notification(session: Session, ntf: Notification):
-    ntf.enabled = True
-    session.commit()
+def enable_notification(engine: DB, ntf: Notification):
+    with engine.get_session() as session:
+        ntf.enabled = True
+        session.commit()
 
 
-def disable_notification(session: Session, ntf: Notification):
-    ntf.enabled = False
-    session.commit()
+def disable_notification(engine: DB, ntf: Notification):
+    with engine.get_session() as session:
+        ntf.enabled = False
+        session.commit()
 
 
-def del_notifications(session: Session, ntf: Notification):
-    session.delete(ntf)
-    session.commit()
+def del_notifications(engine: DB, ntf: Notification):
+    with engine.get_session() as session:
+        session.delete(ntf)
+        session.commit()
 
 
-def set_next_notification(session: Session, ntf: Notification, time: 'datetime'):
-    ntf.next_t = time
-    session.commit()
+def set_next_notification(engine: DB, ntf: Notification, time: 'datetime'):
+    with engine.get_session() as session:
+        ntf.next_t = time
+        session.commit()

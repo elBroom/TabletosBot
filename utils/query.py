@@ -16,7 +16,7 @@ def get_notification_from_query(update: Update, context: CallbackContext) -> Not
     chat_id = query.message.chat_id
     try:
         num = re.match(r"^\w+ (?P<num>\d+)$", query.data).group('num')
-        return get_notification(context.bot_data['db_session'], int(num), chat_id)
+        return get_notification(context.bot_data['db'], int(num), chat_id)
     except (LookupError, ValueError):
         query.message.reply_text('Не верный формат num')
     except NoResultFoundErr:
@@ -30,7 +30,7 @@ def get_history_from_query(update: Update, context: CallbackContext) -> History:
     chat_id = query.message.chat_id
     try:
         num = re.match(r"^\w+ (?P<num>\d+)$", query.data).group('num')
-        return get_history_row(context.bot_data['db_session'], int(num), chat_id)
+        return get_history_row(context.bot_data['db'], int(num), chat_id)
     except (LookupError, ValueError):
         query.message.reply_text('Не верный формат num')
     except NoResultFoundErr:
