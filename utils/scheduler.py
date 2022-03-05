@@ -3,11 +3,35 @@ import pytz
 
 from telegram.ext import JobQueue, Job
 
+from db import DB
 from models.notification import Notification
 from models.setting import Setting
 
 
+def del_old_notification(job_queue: JobQueue):
+    for job in job_queue.jobs():
+        if 'daily' not in job.name:
+            continue
+
+        notification = job.context['notification']
+        today = datetime.date.today()
+
+        if notification.date_end < today:
+            job.schedule_removal()
+
+
+def make_every_day_task(time: datetime.time, db: DB, job_queue: JobQueue, callback):
+    job_queue.run_daily(
+        callback=callback, time=time, name='every day task',
+        context={'db': db},
+    )
+
+
 def send_to_scheduler(setting: Setting, notification: Notification, job_queue: JobQueue, callback):
+    now = datetime.date.today()
+    if notification.date_start > now or notification.date_end < now:
+        return
+
     time = datetime.datetime.strptime(notification.time, '%H:%M').time()
     time = time.replace(tzinfo=pytz.timezone(setting.timezone))
     job_queue.run_daily(

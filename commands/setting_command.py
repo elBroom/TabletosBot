@@ -4,16 +4,12 @@ from tzwhere import tzwhere
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler
 
+from answers import YES, markup_bool, markup_skip
 from models.setting import add_setting, get_setting
 from utils.user_data import set_setting
 
 
 LANGUAGE, TIMEZONE, EMAIL, INTERVAL, PHOTO, URGENCY = range(6)
-YES = ('да', 'д', 'yes', 'y')
-NO = ('нет', 'н', 'now', 'n')
-
-markup_bool = ReplyKeyboardMarkup([['да', 'нет']], one_time_keyboard=True)
-markup_skip = ReplyKeyboardMarkup([['пропустить']], one_time_keyboard=True)
 
 
 def setting_command(update: Update, context: CallbackContext) -> int:

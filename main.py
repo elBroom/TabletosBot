@@ -7,12 +7,12 @@ from datetime import datetime
 
 from telegram.ext import Updater
 
-from commands.alert_command import alert
+from commands.alert_command import alert, toggle_notifications
 from db import DB
 from handlers import handlers
-from models.notification import get_notifications
+from models.notification import get_active_notifications
 from models.setting import get_setting
-from utils.scheduler import send_to_scheduler, send_to_scheduler_once
+from utils.scheduler import send_to_scheduler, send_to_scheduler_once, make_every_day_task
 
 
 logging.basicConfig(
@@ -38,13 +38,17 @@ def main() -> None:
     dispatcher.bot_data['db'] = db
 
     updater.job_queue.scheduler.start()
-    for ntf in get_notifications(db):
-        if ntf.enabled:
-            # TODO don't make query
-            setting = get_setting(db, ntf.chat_id)
-            send_to_scheduler(setting, ntf, updater.job_queue, alert)
-            if ntf.next_t and ntf.next_t > datetime.now():
-                send_to_scheduler_once(setting, ntf, updater.job_queue, alert, ntf.next_t - datetime.now())
+    for ntf in get_active_notifications(db):
+        # TODO don't make query
+        setting = get_setting(db, ntf.chat_id)
+        now = datetime.now(tz=timezone(setting.timezone))
+        send_to_scheduler(setting, ntf, updater.job_queue, alert)
+        if ntf.next_t and ntf.next_t > now:
+            send_to_scheduler_once(setting, ntf, updater.job_queue, alert, ntf.next_t - now)
+
+    time = datetime.strptime('00:00', '%H:%M').time()
+    time = time.replace(tzinfo=timezone(config.TIMEZONE))
+    make_every_day_task(time, db, updater.job_queue, toggle_notifications)
 
     updater.start_polling()
     updater.idle()

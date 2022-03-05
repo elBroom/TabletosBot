@@ -10,4 +10,4 @@ restart:
 	docker-compose restart
 
 create_migrations:
-	touch migrations/"$(date +"%s").sql"
+	touch migrations/$(shell date +"%s").sql

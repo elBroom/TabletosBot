@@ -2,7 +2,7 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext
 
 from commands.alert_command import alert
-from models.notification import del_notifications, get_notifications, enable_notification, disable_notification
+from models.notification import del_notifications, get_all_notifications, enable_notification, disable_notification
 from utils.scheduler import send_to_scheduler, stop_to_scheduler
 from utils.query import get_notification_from_query
 from utils.user_data import get_setting
@@ -14,7 +14,7 @@ OFF, ON, DELETE = 'off', 'on', 'delete_pill'
 def list_command(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
 
-    notifications = get_notifications(context.bot_data['db'], chat_id)
+    notifications = get_all_notifications(context.bot_data['db'], chat_id)
     if not notifications:
         update.message.reply_text('Пока ничего нет')
         return
@@ -32,10 +32,10 @@ def list_command(update: Update, context: CallbackContext) -> None:
         buttons.append(
             InlineKeyboardButton(text='Удалить', callback_data=f'{DELETE} {ntf.id}')
         )
-        update.message.reply_text(
-            f'Тебе нужно выпить {ntf.name} ({ntf.dosage}) в {ntf.time}',
-            reply_markup=InlineKeyboardMarkup([buttons]),
-        )
+        msg = f'Тебе нужно выпить {ntf.name} ({ntf.dosage}) в {ntf.time}'
+        if ntf.date_start and ntf.date_end:
+            msg += f' с {ntf.date_start} по {ntf.date_end}'
+        update.message.reply_text(msg, reply_markup=InlineKeyboardMarkup([buttons]))
 
 
 def mod_on_query(update: Update, context: CallbackContext) -> None:
