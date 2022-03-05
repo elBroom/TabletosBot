@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 
-from db import NoResultFoundErr
+from db import NoResultFound
 from models.notification import Notification, get_notification
 from models.history import History, get_history_row
 
@@ -19,7 +19,7 @@ def get_notification_from_query(update: Update, context: CallbackContext) -> Not
         return get_notification(context.bot_data['db_session'], int(num), chat_id)
     except (LookupError, ValueError):
         query.message.reply_text('Не верный формат num')
-    except NoResultFoundErr:
+    except NoResultFound:
         query.message.reply_text('Напоминание не найдено.')
 
 
@@ -33,5 +33,5 @@ def get_history_from_query(update: Update, context: CallbackContext) -> History:
         return get_history_row(context.bot_data['db_session'], int(num), chat_id)
     except (LookupError, ValueError):
         query.message.reply_text('Не верный формат num')
-    except NoResultFoundErr:
+    except NoResultFound:
         query.message.reply_text('Запись не найдена.')
