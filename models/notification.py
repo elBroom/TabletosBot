@@ -1,7 +1,7 @@
 import datetime
 
-from sqlalchemy import Boolean, Column, Integer, String, Date, DateTime, or_
-from sqlalchemy.orm import Session
+from sqlalchemy import Boolean, Column, Integer, String, Date, DateTime, ForeignKey, or_
+from sqlalchemy.orm import Session, relationship
 
 from db import Base
 
@@ -10,7 +10,7 @@ class Notification(Base):
     __tablename__ = 'notifications'
 
     id = Column(Integer, primary_key=True)
-    chat_id = Column(Integer)
+    chat_id = Column(Integer, ForeignKey('user_settings.chat_id'))
     name = Column(String)
     time = Column(String)
     dosage = Column(String)
@@ -18,18 +18,19 @@ class Notification(Base):
     next_t = Column(DateTime)
     date_start = Column(Date)
     date_end = Column(Date)
+    setting = relationship("Setting", lazy="selectin")
 
 
 def add_notification(session: Session, ntf: Notification):
     today = datetime.date.today()
     if ntf.date_start:
-        ntf.date_start = datetime.datetime.strptime(ntf.date_start, '%Y-%m-%d')
-    else:
+        ntf.date_start = datetime.datetime.strptime(ntf.date_start, '%Y-%m-%d').date()
+    elif ntf.date_start == '':
         ntf.date_start = today
 
     if ntf.date_end:
-        ntf.date_end = datetime.datetime.strptime(ntf.date_end, '%Y-%m-%d')
-    else:
+        ntf.date_end = datetime.datetime.strptime(ntf.date_end, '%Y-%m-%d').date()
+    elif ntf.date_end == '':
         ntf.date_end = today
 
     session.add(ntf)
@@ -40,11 +41,9 @@ def add_notification(session: Session, ntf: Notification):
 def get_active_notifications(session: Session):
     today = datetime.date.today()
     qs = session.query(Notification).order_by(Notification.time)
-    qs = qs.filter_by(
-        Notification.enabled is True,
-        or_(Notification.date_start is None, Notification.date_start <= today),
-        or_(Notification.date_end is None, Notification.date_end >= today),
-    )
+    qs = qs.filter_by(enabled=True)
+    qs = qs.filter(or_(Notification.date_start == None, Notification.date_start <= today))
+    qs = qs.filter(or_(Notification.date_end == None, Notification.date_end >= today))
     return qs.all()
 
 
