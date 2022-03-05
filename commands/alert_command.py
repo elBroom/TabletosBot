@@ -12,6 +12,7 @@ from utils.user_data import get_setting
 
 TAKE, TAKEPHOTO, FORGOT, LATER = 'take', 'take_photo', 'forgot', 'later'
 CHECK, SAVE = range(2)
+HISTORY_SAVED = 'Запись {notification.name} ({notification.dosage}) добавлена в дневник.'
 
 
 def alert(context: CallbackContext) -> None:
@@ -61,7 +62,7 @@ def take_query(update: Update, context: CallbackContext) -> None:
 
     save_history(context, notification)
     query = update.callback_query
-    query.message.reply_text('Запись добавлена в дневник.')
+    query.message.reply_text(HISTORY_SAVED.format(notification=notification))
 
 
 def take_photo_query(update: Update, context: CallbackContext) -> int:
@@ -90,7 +91,7 @@ def check_photo(update: Update, context: CallbackContext) -> int:
     save_history(context, notification)
 
     os.remove(file)
-    update.message.reply_text('Запись добавлена в дневник.')
+    update.message.reply_text(HISTORY_SAVED.format(notification=notification))
     return ConversationHandler.END
 
 
@@ -98,7 +99,7 @@ def skip_photo(update: Update, context: CallbackContext) -> int:
     notification = context.user_data['take_photo_query']
     save_history(context, notification)
 
-    update.message.reply_text('Запись добавлена в дневник.')
+    update.message.reply_text(HISTORY_SAVED.format(notification=notification))
     return ConversationHandler.END
 
 

@@ -12,4 +12,4 @@ class NoResultFoundErr(NoResultFound):
 
 class DB:
     def __init__(self, path):
-        self.session = Session(bind=create_engine(f'{path}?check_same_thread=false'))
+        self.session = Session(bind=create_engine(f'{path}?check_same_thread=false'), autocommit=True)
