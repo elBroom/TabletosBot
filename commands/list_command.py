@@ -48,7 +48,7 @@ def mod_on_query(update: Update, context: CallbackContext) -> None:
     send_to_scheduler(setting, notification, context.job_queue, alert)
 
     query = update.callback_query
-    query.message.reply_text('Напоминание добавлено.')
+    query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) добавлено.')
 
 
 def mod_off_query(update: Update, context: CallbackContext) -> None:
@@ -60,7 +60,7 @@ def mod_off_query(update: Update, context: CallbackContext) -> None:
     disable_notification(context.bot_data['db'], notification)
 
     query = update.callback_query
-    query.message.reply_text('Напоминание остановлено.')
+    query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) остановлено.')
 
 
 def delete_query(update: Update, context: CallbackContext) -> None:
@@ -72,4 +72,4 @@ def delete_query(update: Update, context: CallbackContext) -> None:
     del_notifications(context.bot_data['db'], notification)
 
     query = update.callback_query
-    query.message.reply_text('Напоминание удалено.')
+    query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) удалено.')

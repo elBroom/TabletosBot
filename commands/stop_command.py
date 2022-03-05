@@ -13,4 +13,4 @@ def stop_command(update: Update, context: CallbackContext) -> None:
         disable_notification(context.bot_data['db'], ntf)
         stop_to_scheduler(ntf.id, context.job_queue)
 
-    update.message.reply_text('Напоминание остановлены.')
+    update.message.reply_text('Напоминания остановлены.')
