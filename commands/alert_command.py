@@ -17,12 +17,12 @@ HISTORY_SAVED = 'Запись {notification.name} ({notification.dosage}) доб
 
 
 def toggle_notifications(context: CallbackContext) -> None:
-    db = context.job.context['db']
+    db_session = context.job.context['db_session']
 
     del_old_notification(context.job_queue)
-    for ntf in get_new_notifications(db):
+    for ntf in get_new_notifications(db_session):
         # TODO don't make query
-        setting = get_setting(db, ntf.chat_id)
+        setting = get_setting(db_session, ntf.chat_id)
 
         send_to_scheduler(setting, ntf, context.job_queue, alert)
 

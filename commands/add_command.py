@@ -48,7 +48,7 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
     if update.message.text in NOW:
         time = ''
 
-    add_history(context.bot_data['db'], notification, setting.timezone, time=time)
+    add_history(context.bot_data['db_session'], notification, setting.timezone, time=time)
 
     update.message.reply_text(f'Запись {notification.name} ({notification.dosage}) добавлена.')
     return ConversationHandler.END

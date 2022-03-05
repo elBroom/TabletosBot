@@ -3,7 +3,6 @@ import pytz
 
 from telegram.ext import JobQueue, Job
 
-from db import DB
 from models.notification import Notification
 from models.setting import Setting
 
@@ -20,10 +19,10 @@ def del_old_notification(job_queue: JobQueue):
             job.schedule_removal()
 
 
-def make_every_day_task(time: datetime.time, db: DB, job_queue: JobQueue, callback):
+def make_every_day_task(time: datetime.time, db_session: 'Session', job_queue: JobQueue, callback):
     job_queue.run_daily(
         callback=callback, time=time, name='every day task',
-        context={'db': db},
+        context={'db_session': db_session},
     )
 
 

@@ -35,7 +35,7 @@ def main() -> None:
     # dispatcher.add_error_handler(lambda *args: logger.info('Oops!'))
 
     db = DB(config.DB_PATH)
-    dispatcher.bot_data['db'] = db
+    dispatcher.bot_data['db_session'] = db.session
 
     updater.job_queue.scheduler.start()
     for ntf in get_active_notifications(db):

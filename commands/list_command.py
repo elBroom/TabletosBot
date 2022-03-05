@@ -14,7 +14,7 @@ OFF, ON, DELETE = 'off', 'on', 'delete_pill'
 def list_command(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
 
-    notifications = get_all_notifications(context.bot_data['db'], chat_id)
+    notifications = get_all_notifications(context.bot_data['db_session'], chat_id)
     if not notifications:
         update.message.reply_text('Пока ничего нет')
         return
@@ -42,7 +42,7 @@ def mod_on_query(update: Update, context: CallbackContext) -> None:
     notification = get_notification_from_query(update, context)
     if not notification:
         return
-    enable_notification(context.bot_data['db'], notification)
+    enable_notification(context.bot_data['db_session'], notification)
 
     setting = get_setting(context, notification.chat_id)
     send_to_scheduler(setting, notification, context.job_queue, alert)
@@ -57,7 +57,7 @@ def mod_off_query(update: Update, context: CallbackContext) -> None:
         return
 
     stop_to_scheduler(notification.id, context.job_queue)
-    disable_notification(context.bot_data['db'], notification)
+    disable_notification(context.bot_data['db_session'], notification)
 
     query = update.callback_query
     query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) остановлено.')
@@ -69,7 +69,7 @@ def delete_query(update: Update, context: CallbackContext) -> None:
         return
 
     stop_to_scheduler(notification.id, context.job_queue)
-    del_notifications(context.bot_data['db'], notification)
+    del_notifications(context.bot_data['db_session'], notification)
 
     query = update.callback_query
     query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) удалено.')
