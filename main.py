@@ -38,17 +38,17 @@ def main() -> None:
     dispatcher.bot_data['db_session'] = db.session
 
     updater.job_queue.scheduler.start()
-    for ntf in get_active_notifications(db):
+    now = datetime.now()
+    for ntf in get_active_notifications(db.session):
         # TODO don't make query
-        setting = get_setting(db, ntf.chat_id)
-        now = datetime.now(tz=timezone(setting.timezone))
+        setting = get_setting(db.session, ntf.chat_id)
         send_to_scheduler(setting, ntf, updater.job_queue, alert)
         if ntf.next_t and ntf.next_t > now:
             send_to_scheduler_once(setting, ntf, updater.job_queue, alert, ntf.next_t - now)
 
     time = datetime.strptime('00:00', '%H:%M').time()
     time = time.replace(tzinfo=timezone(config.TIMEZONE))
-    make_every_day_task(time, db, updater.job_queue, toggle_notifications)
+    make_every_day_task(time, db.session, updater.job_queue, toggle_notifications)
 
     updater.start_polling()
     updater.idle()

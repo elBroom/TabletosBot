@@ -23,12 +23,12 @@ class Notification(Base):
 def add_notification(session: Session, ntf: Notification):
     today = datetime.date.today()
     if ntf.date_start:
-        ntf.date_start = datetime.datetime.strptime(ntf.date_start, '%Y-%m-%d')
+        ntf.date_start = datetime.datetime.strptime(ntf.date_start, '%Y-%m-%d').date()
     else:
         ntf.date_start = today
 
     if ntf.date_end:
-        ntf.date_end = datetime.datetime.strptime(ntf.date_end, '%Y-%m-%d')
+        ntf.date_end = datetime.datetime.strptime(ntf.date_end, '%Y-%m-%d').date()
     else:
         ntf.date_end = today
 
@@ -40,11 +40,9 @@ def add_notification(session: Session, ntf: Notification):
 def get_active_notifications(session: Session):
     today = datetime.date.today()
     qs = session.query(Notification).order_by(Notification.time)
-    qs = qs.filter_by(
-        Notification.enabled is True,
-        or_(Notification.date_start is None, Notification.date_start <= today),
-        or_(Notification.date_end is None, Notification.date_end >= today),
-    )
+    qs = qs.filter_by(enabled=True)
+    qs = qs.filter(or_(Notification.date_start == None, Notification.date_start <= today))
+    qs = qs.filter(or_(Notification.date_end == None, Notification.date_end >= today))
     return qs.all()
 
 

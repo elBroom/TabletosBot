@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
-from answers import TODAY, markup_today
+from answers import TODAY, NO, markup_today, markup_bool
 from models.notification import add_notification, Notification
 from commands.alert_command import alert
 from utils.scheduler import send_to_scheduler
@@ -39,11 +39,15 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
     context.user_data['new_command']['time'] = update.message.text
     update.message.reply_text(
         'Нужно ли установить дату начала и окончания приема?',
+        reply_markup=markup_bool,
     )
     return DATE_SET
 
 
 def data_setting(update: Update, context: CallbackContext) -> int:
+    if update.message.text in NO:
+        return save_notification(update, context)
+
     update.message.reply_text(
         'Первый день приема таблеток? (формат 2022-12-01)',
         reply_markup=markup_today,

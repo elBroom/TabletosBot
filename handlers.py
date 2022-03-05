@@ -4,7 +4,7 @@ from telegram.ext import (
     CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler,
 )
 
-from answers import YES, NO, NOW, SKIP
+from answers import YES, NO, NOW, TODAY, SKIP
 from commands import (
     start_command, help_command, list_command, history_command,
     setting_command, new_command, alert_command, report_command,
@@ -13,13 +13,11 @@ from commands import (
 
 regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 regex_dosage = re.compile(r'^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?(мг|г|mg|g)$')
-regex_date_time = re.compile(r'^202[0-9]-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]$')
-regex_date = re.compile(r'^202[0-9]-[0-1][0-9]-[0-3][0-9]$')
+regex_date_time = re.compile(f'^(202[0-9]-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9])|{"|".join(NOW)}$')
+regex_date = re.compile(f'^(202[0-9]-[0-1][0-9]-[0-3][0-9])|{"|".join(TODAY)}$')
 regex_time = re.compile(r'^[0-2][0-9]:[0-5][0-9]$')
-regex_yes = re.compile(f"^{'|'.join(YES)}$")
-regex_no = re.compile(f"^{'|'.join(NO)}$")
+regex_bool = re.compile(f"^{'|'.join(YES)}|{'|'.join(NO)}$")
 regex_skip = re.compile(f"^{'|'.join(SKIP)}$")
-regex_now = re.compile(f"^{'|'.join(NOW)}$")
 
 
 handlers = [
@@ -34,20 +32,18 @@ handlers = [
         entry_points=[CommandHandler('setting', setting_command.setting_command)],
         states={
             setting_command.TIMEZONE: [
-                MessageHandler(Filters.regex(regex_skip), setting_command.skip_timezone),
-                MessageHandler(Filters.regex('^\w+/\w+$'), setting_command.set_timezone),
+                MessageHandler(Filters.regex(f'^\w+/\w+$'), setting_command.set_timezone),
                 MessageHandler(Filters.location, setting_command.set_timezone_from_location),
+                MessageHandler(Filters.regex(regex_skip), setting_command.skip_timezone),
             ],
             setting_command.INTERVAL: [
                 MessageHandler(Filters.regex('^[0-9]+$'), setting_command.set_interval),
             ],
             setting_command.PHOTO: [
-                MessageHandler(Filters.regex(regex_yes), setting_command.set_photo),
-                MessageHandler(Filters.regex(regex_no), setting_command.set_photo),
+                MessageHandler(Filters.regex(regex_bool), setting_command.set_photo),
             ],
             setting_command.URGENCY: [
-                MessageHandler(Filters.regex(regex_yes), setting_command.set_urgency),
-                MessageHandler(Filters.regex(regex_no), setting_command.set_urgency),
+                MessageHandler(Filters.regex(regex_bool), setting_command.set_urgency),
             ],
         },
         fallbacks=[CommandHandler('cancel', setting_command.cancel)],
@@ -58,10 +54,7 @@ handlers = [
             new_command.NAME: [MessageHandler(Filters.regex('^\w+$'), new_command.set_pill_name)],
             new_command.DOSAGE: [MessageHandler(Filters.regex(regex_dosage), new_command.set_pill_dosage)],
             new_command.TIME: [MessageHandler(Filters.regex(regex_time), new_command.set_pill_time)],
-            new_command.DATE_SET: [
-                MessageHandler(Filters.regex(regex_yes), new_command.data_setting),
-                MessageHandler(Filters.regex(regex_now), new_command.save_notification),
-            ],
+            new_command.DATE_SET: [MessageHandler(Filters.regex(regex_bool), new_command.data_setting)],
             new_command.DATE_START: [MessageHandler(Filters.regex(regex_date), new_command.set_date_start)],
             new_command.DATE_END: [MessageHandler(Filters.regex(regex_date), new_command.set_date_end)],
         },
@@ -94,10 +87,7 @@ handlers = [
         states={
             add_command.NAME: [MessageHandler(Filters.regex('^\w+$'), add_command.set_pill_name)],
             add_command.DOSAGE: [MessageHandler(Filters.regex(regex_dosage), add_command.set_pill_dosage)],
-            add_command.TIME: [
-                MessageHandler(Filters.regex(regex_now), add_command.set_pill_time),
-                MessageHandler(Filters.regex(regex_date_time), add_command.set_pill_time),
-            ],
+            add_command.TIME: [MessageHandler(Filters.regex(regex_date_time), add_command.set_pill_time)],
         },
         fallbacks=[CommandHandler('cancel', add_command.cancel)],
     )

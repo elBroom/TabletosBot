@@ -19,7 +19,7 @@ HISTORY_SAVED = 'Запись {notification.name} ({notification.dosage}) доб
 def toggle_notifications(context: CallbackContext) -> None:
     db_session = context.job.context['db_session']
 
-    del_old_notification(context.job_queue)
+    del_old_notification(db_session, context.job_queue)
     for ntf in get_new_notifications(db_session):
         # TODO don't make query
         setting = get_setting(db_session, ntf.chat_id)
@@ -130,7 +130,7 @@ def later_query(update: Update, context: CallbackContext) -> None:
 
     setting = get_setting(context, notification.chat_id)
     job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
-    set_next_notification(context.bot_data['db_session'], notification, job.next_t, setting.timezone)
+    set_next_notification(context.bot_data['db_session'], notification, job.next_t)
 
     context.bot.logger.info(f'Notification delayed for chat_id: {notification.chat_id}')
     query = update.callback_query
