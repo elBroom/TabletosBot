@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler
 
 from models.notification import Notification
@@ -29,6 +29,7 @@ def set_pill_dosage(update: Update, context: CallbackContext) -> int:
     context.user_data['add_command']['dosage'] = update.message.text
     update.message.reply_text(
         'В какое время выпил таблетку? (формат 2021-12-01 15:30)',
+        reply_markup=ReplyKeyboardMarkup([['сейчас']], one_time_keyboard=True),
     )
     return TIME
 
@@ -41,7 +42,12 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
     )
     context.bot.logger.info(f'Add history for chat_id: {notification.chat_id}')
     setting = get_setting(context, notification.chat_id)
-    add_history(context.bot_data['db_session'], notification, setting.timezone, time=update.message.text)
+
+    time = update.message.text
+    if update.message.text in ('сейчас', 'now'):
+        time = ''
+
+    add_history(context.bot_data['db_session'], notification, setting.timezone, time=time)
 
     update.message.reply_text('Запись добавлена')
     return ConversationHandler.END
