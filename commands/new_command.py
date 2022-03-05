@@ -47,7 +47,7 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
     setting = get_setting(context, notification.chat_id)
     send_to_scheduler(setting, notification, context.job_queue, alert)
 
-    update.message.reply_text('Напоминание добавлено, ждем-с...')
+    update.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) добавлено, ждем-с...')
     return ConversationHandler.END
 
 

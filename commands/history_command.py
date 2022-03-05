@@ -35,4 +35,4 @@ def delete_log_query(update: Update, context: CallbackContext) -> None:
     del_history_row(context.bot_data['db_session'], history)
 
     query = update.callback_query
-    query.message.reply_text('Запись удалена.')
+    query.message.reply_text(f'Запись {history.name} ({history.dosage}) удалена.')

@@ -1,5 +1,3 @@
-import pytz
-
 from sqlalchemy import Boolean, Column, Integer, String, DateTime
 from sqlalchemy.orm import Session
 
