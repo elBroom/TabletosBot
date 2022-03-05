@@ -121,8 +121,8 @@ def later_query(update: Update, context: CallbackContext) -> None:
 
     setting = get_setting(context, notification.chat_id)
     job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
-    set_next_notification(context.bot_data['db_session'], notification, job.next_t)
+    set_next_notification(context.bot_data['db_session'], notification, job.next_t, setting.timezone)
 
     context.bot.logger.info(f'Notification delayed for chat_id: {notification.chat_id}')
     query = update.callback_query
-    query.message.reply_text('Напоминание перенесено.')
+    query.message.reply_text(f'Напоминание перенесено на {setting.interval_alert} минут.')
