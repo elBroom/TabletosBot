@@ -1,18 +1,30 @@
 import os
 
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, Update
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, ConversationHandler
 
-from models.notification import Notification, set_next_notification
+from answers import markup_skip
+from models.notification import Notification, get_new_notifications, set_next_notification
 from models.history import add_history
 from utils.img import valid_img
-from utils.scheduler import send_to_scheduler_once, stop_to_scheduler_once
+from utils.scheduler import del_old_notification, send_to_scheduler, send_to_scheduler_once, stop_to_scheduler_once
 from utils.query import get_notification_from_query
 from utils.user_data import get_setting
 
 TAKE, TAKEPHOTO, FORGOT, LATER = 'take', 'take_photo', 'forgot', 'later'
 CHECK, SAVE = range(2)
 HISTORY_SAVED = 'Запись {notification.name} ({notification.dosage}) добавлена в дневник.'
+
+
+def toggle_notifications(context: CallbackContext) -> None:
+    db = context.job.context['db']
+
+    del_old_notification(context.job_queue)
+    for ntf in get_new_notifications(db):
+        # TODO don't make query
+        setting = get_setting(db, ntf.chat_id)
+
+        send_to_scheduler(setting, ntf, context.job_queue, alert)
 
 
 def alert(context: CallbackContext) -> None:
@@ -72,10 +84,7 @@ def take_photo_query(update: Update, context: CallbackContext) -> int:
 
     context.user_data['take_photo_query'] = notification
     query = update.callback_query
-    query.message.reply_text(
-        'Пришли фото',
-        reply_markup=ReplyKeyboardMarkup([['пропустить']], one_time_keyboard=True),
-    )
+    query.message.reply_text('Пришли фото', reply_markup=markup_skip)
     return CHECK
 
 

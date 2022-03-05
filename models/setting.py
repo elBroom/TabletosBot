@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Boolean, Integer, String
-from sqlalchemy.orm import Session
 
 from db import Base, NoResultFound
 

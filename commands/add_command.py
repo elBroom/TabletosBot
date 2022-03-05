@@ -1,6 +1,7 @@
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
+from answers import NOW, markup_now
 from models.notification import Notification
 from models.history import add_history
 from utils.user_data import get_setting
@@ -28,8 +29,8 @@ def set_pill_name(update: Update, context: CallbackContext) -> int:
 def set_pill_dosage(update: Update, context: CallbackContext) -> int:
     context.user_data['add_command']['dosage'] = update.message.text
     update.message.reply_text(
-        'В какое время выпил таблетку? (формат 2021-12-01 15:30)',
-        reply_markup=ReplyKeyboardMarkup([['сейчас']], one_time_keyboard=True),
+        'В какое время выпил таблетку? (формат 2022-12-01 15:30)',
+        reply_markup=markup_now,
     )
     return TIME
 
@@ -44,7 +45,7 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
     setting = get_setting(context, notification.chat_id)
 
     time = update.message.text
-    if update.message.text in ('сейчас', 'now'):
+    if update.message.text in NOW:
         time = ''
 
     add_history(context.bot_data['db_session'], notification, setting.timezone, time=time)
