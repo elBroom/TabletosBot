@@ -43,7 +43,7 @@ def alert(context: CallbackContext) -> None:
 
     if setting.urgency_enabled:
         job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
-        set_next_notification(context.bot_data['db'], notification, job.next_t)
+        set_next_notification(context.bot_data['db_session'], notification, job.next_t)
         buttons.append(
             InlineKeyboardButton(text='Забыл', callback_data=f'{FORGOT} {notification.id}'),
         )
@@ -64,7 +64,7 @@ def save_history(context: CallbackContext, notification: Notification):
     stop_to_scheduler_once(notification.id, context.job_queue)
     setting = get_setting(context, notification.chat_id)
     context.bot.logger.info(f'Add row to history for chat_id: {setting.chat_id}')
-    add_history(context.bot_data['db'], notification, setting.timezone)
+    add_history(context.bot_data['db_session'], notification, setting.timezone)
 
 
 def take_query(update: Update, context: CallbackContext) -> None:
@@ -130,8 +130,8 @@ def later_query(update: Update, context: CallbackContext) -> None:
 
     setting = get_setting(context, notification.chat_id)
     job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
-    set_next_notification(context.bot_data['db'], notification, job.next_t)
+    set_next_notification(context.bot_data['db_session'], notification, job.next_t, setting.timezone)
 
     context.bot.logger.info(f'Notification delayed for chat_id: {notification.chat_id}')
     query = update.callback_query
-    query.message.reply_text('Напоминание перенесено.')
+    query.message.reply_text(f'Напоминание перенесено на {setting.interval_alert} минут.')
