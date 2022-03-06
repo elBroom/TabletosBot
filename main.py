@@ -11,7 +11,6 @@ from commands.alert_command import alert, toggle_notifications
 from db import DB
 from handlers import handlers
 from models.notification import get_active_notifications
-from models.setting import get_setting
 from utils.scheduler import send_to_scheduler, send_to_scheduler_once, make_every_day_task
 
 

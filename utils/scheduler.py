@@ -3,7 +3,6 @@ import pytz
 
 from telegram.ext import JobQueue, Job
 
-from db import DB
 from models.notification import Notification, enable_notification
 from models.setting import Setting
 

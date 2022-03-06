@@ -2,5 +2,6 @@
 __pycache__
 /config.py
 reload_db.py
-TabletosBot.log
+*.log*
 *.db
+.DS_Store

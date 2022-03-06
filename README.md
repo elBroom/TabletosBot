@@ -10,7 +10,12 @@
 
 Ссылка на бот: https://t.me/TabletossBot
 
-![bot_example](./static/bot_example.png)
+### Настройка
+![bot_setting](./static/bot_setting.png)
+### Добавление напоминания
+![bot_new](./static/bot_new.png)
+### Получение напоминания
+![bot_alert](./static/bot_alert.png)
 
 ---
 ## Техническая информация
