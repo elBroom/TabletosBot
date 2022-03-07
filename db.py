@@ -21,6 +21,11 @@ class DB:
 def transaction_handler(func):
     def wrapper(update: 'Update', context: 'CallbackContext'):
         with context.bot_data['db'].get_session() as db_session:
-            context.bot_data['db_session'] = db_session
-            return func(update, context)
+            if 'db_session' in context.chat_data:
+                context.bot.logger.info(f'Double db_session')
+
+            context.chat_data['db_session'] = db_session
+            res = func(update, context)
+            del context.chat_data['db_session']
+            return res
     return wrapper

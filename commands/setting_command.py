@@ -96,7 +96,7 @@ def set_urgency(update: Update, context: CallbackContext) -> int:
         urgency_enabled = True
     user_data = context.user_data['setting_command']
 
-    setting = get_setting(context.bot_data['db_session'], update.message.chat_id)
+    setting = get_setting(context.chat_data['db_session'], update.message.chat_id)
     if 'timezone' in user_data:
         setting.timezone = user_data['timezone']
     if 'interval_alert' in user_data:
@@ -105,7 +105,7 @@ def set_urgency(update: Update, context: CallbackContext) -> int:
     setting.urgency_enabled = urgency_enabled
 
     context.bot.logger.info(f'Add setting for chat_id: {setting.chat_id}')
-    add_setting(context.bot_data['db_session'], setting)
+    add_setting(context.chat_data['db_session'], setting)
     set_setting(context, setting)
 
     update.message.reply_text('Настройки применены')

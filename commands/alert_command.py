@@ -63,7 +63,7 @@ def save_history(context: CallbackContext, notification: Notification):
     stop_to_scheduler_once(notification.id, context.job_queue)
     setting = get_setting(context, notification.chat_id)
     context.bot.logger.info(f'Add row to history for chat_id: {setting.chat_id}')
-    add_history(context.bot_data['db_session'], notification, setting.timezone)
+    add_history(context.chat_data['db_session'], notification, setting.timezone)
 
 
 @transaction_handler
@@ -135,7 +135,7 @@ def later_query(update: Update, context: CallbackContext) -> None:
 
     setting = get_setting(context, notification.chat_id)
     job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
-    set_next_notification(context.bot_data['db_session'], notification, job.next_t)
+    set_next_notification(context.chat_data['db_session'], notification, job.next_t)
 
     context.bot.logger.info(f'Notification delayed for chat_id: {notification.chat_id}')
     query = update.callback_query

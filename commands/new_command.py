@@ -87,7 +87,7 @@ def save_notification(update: Update, context: CallbackContext) -> int:
         date_end=context.user_data['new_command'].get('date_end'),
     )
     context.bot.logger.info(f'Add notification for chat_id: {notification.chat_id}')
-    add_notification(context.bot_data['db_session'], notification)
+    add_notification(context.chat_data['db_session'], notification)
 
     setting = get_setting(context, notification.chat_id)
     send_to_scheduler(setting, notification, context.job_queue, alert)

@@ -13,7 +13,7 @@ DELETE = 'delete_log'
 def history_command(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
 
-    history = get_history(context.bot_data['db_session'], chat_id)
+    history = get_history(context.chat_data['db_session'], chat_id)
     if not history:
         update.message.reply_text('Пока ничего нет')
         return
@@ -35,7 +35,7 @@ def delete_log_query(update: Update, context: CallbackContext) -> None:
     if not history:
         return
 
-    del_history_row(context.bot_data['db_session'], history)
+    del_history_row(context.chat_data['db_session'], history)
 
     query = update.callback_query
     query.message.reply_text(f'Запись {history.name} ({history.dosage}) удалена.')

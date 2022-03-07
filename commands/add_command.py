@@ -49,7 +49,7 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
     if update.message.text in NOW:
         time = ''
 
-    add_history(context.bot_data['db_session'], notification, setting.timezone, time=time)
+    add_history(context.chat_data['db_session'], notification, setting.timezone, time=time)
 
     context.bot.logger.info(f'Add history for chat_id: {notification.chat_id}')
     update.message.reply_text(f'Запись {notification.name} ({notification.dosage}) добавлена.')
