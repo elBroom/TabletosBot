@@ -12,4 +12,15 @@ class NoResultFoundErr(NoResultFound):
 
 class DB:
     def __init__(self, path):
-        self.session = Session(bind=create_engine(f'{path}?check_same_thread=false', pool_pre_ping=True))
+        self.engine = create_engine(f'{path}?check_same_thread=false', pool_pre_ping=True)
+
+    def get_session(self):
+        return Session(bind=self.engine)
+
+
+def transaction_handler(func):
+    def wrapper(update: 'Update', context: 'CallbackContext'):
+        with context.bot_data['db'].get_session() as db_session:
+            context.bot_data['db_session'] = db_session
+            return func(update, context)
+    return wrapper

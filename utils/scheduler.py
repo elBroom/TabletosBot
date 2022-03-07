@@ -20,11 +20,8 @@ def del_old_notification(db_session: 'Session', job_queue: JobQueue):
             enable_notification(db_session, notification)
 
 
-def make_every_day_task(time: datetime.time, db_session: 'Session', job_queue: JobQueue, callback):
-    job_queue.run_daily(
-        callback=callback, time=time, name='every day task',
-        context={'db_session': db_session},
-    )
+def make_every_day_task(time: datetime.time, job_queue: JobQueue, callback):
+    job_queue.run_daily(callback=callback, time=time, name='every day task')
 
 
 def send_to_scheduler(setting: Setting, notification: Notification, job_queue: JobQueue, callback):

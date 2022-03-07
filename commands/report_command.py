@@ -4,9 +4,11 @@ import os
 from telegram import Update
 from telegram.ext import CallbackContext
 
+from db import transaction_handler
 from models.history import get_history
 
 
+@transaction_handler
 def report_command(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
 

@@ -4,6 +4,7 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, ConversationHandler
 
 from answers import markup_skip
+from db import transaction_handler
 from models.notification import Notification, get_new_notifications, set_next_notification
 from models.history import add_history
 from utils.img import valid_img
@@ -17,11 +18,10 @@ HISTORY_SAVED = 'Запись {notification.name} ({notification.dosage}) доб
 
 
 def toggle_notifications(context: CallbackContext) -> None:
-    db_session = context.job.context['db_session']
-
-    del_old_notification(db_session, context.job_queue)
-    for ntf in get_new_notifications(db_session):
-        send_to_scheduler(ntf.setting, ntf, context.job_queue, alert)
+    with context.bot_data['db'].get_session() as db_session:
+        del_old_notification(db_session, context.job_queue)
+        for ntf in get_new_notifications(db_session):
+            send_to_scheduler(ntf.setting, ntf, context.job_queue, alert)
 
 
 def alert(context: CallbackContext) -> None:
@@ -41,7 +41,8 @@ def alert(context: CallbackContext) -> None:
 
     if setting.urgency_enabled:
         job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
-        set_next_notification(context.bot_data['db_session'], notification, job.next_t)
+        with context.bot_data['db'].get_session() as db_session:
+            set_next_notification(db_session, notification, job.next_t)
         buttons.append(
             InlineKeyboardButton(text='Забыл', callback_data=f'{FORGOT} {notification.id}'),
         )
@@ -65,6 +66,7 @@ def save_history(context: CallbackContext, notification: Notification):
     add_history(context.bot_data['db_session'], notification, setting.timezone)
 
 
+@transaction_handler
 def take_query(update: Update, context: CallbackContext) -> None:
     notification = get_notification_from_query(update, context)
     if not notification:
@@ -75,6 +77,7 @@ def take_query(update: Update, context: CallbackContext) -> None:
     query.message.reply_text(HISTORY_SAVED.format(notification=notification))
 
 
+@transaction_handler
 def take_photo_query(update: Update, context: CallbackContext) -> int:
     notification = get_notification_from_query(update, context)
     if not notification:
@@ -86,6 +89,7 @@ def take_photo_query(update: Update, context: CallbackContext) -> int:
     return CHECK
 
 
+@transaction_handler
 def check_photo(update: Update, context: CallbackContext) -> int:
     photo_file = update.message.photo[-1].get_file()
     file = photo_file.download()
@@ -102,6 +106,7 @@ def check_photo(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
+@transaction_handler
 def skip_photo(update: Update, context: CallbackContext) -> int:
     notification = context.user_data['take_photo_query']
     save_history(context, notification)
@@ -110,6 +115,7 @@ def skip_photo(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
+@transaction_handler
 def forgot_query(update: Update, context: CallbackContext) -> None:
     notification = get_notification_from_query(update, context)
     if not notification:
@@ -121,6 +127,7 @@ def forgot_query(update: Update, context: CallbackContext) -> None:
     query.message.reply_text('Печально.')
 
 
+@transaction_handler
 def later_query(update: Update, context: CallbackContext) -> None:
     notification = get_notification_from_query(update, context)
     if not notification:

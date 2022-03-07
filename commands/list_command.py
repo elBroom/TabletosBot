@@ -1,6 +1,7 @@
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext
 
+from db import transaction_handler
 from commands.alert_command import alert
 from models.notification import del_notifications, get_all_notifications, enable_notification, disable_notification
 from utils.scheduler import send_to_scheduler, stop_to_scheduler
@@ -11,6 +12,7 @@ from utils.user_data import get_setting
 OFF, ON, DELETE = 'off', 'on', 'delete_pill'
 
 
+@transaction_handler
 def list_command(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
 
@@ -38,6 +40,7 @@ def list_command(update: Update, context: CallbackContext) -> None:
         update.message.reply_text(msg, reply_markup=InlineKeyboardMarkup([buttons]))
 
 
+@transaction_handler
 def mod_on_query(update: Update, context: CallbackContext) -> None:
     notification = get_notification_from_query(update, context)
     if not notification:
@@ -51,6 +54,7 @@ def mod_on_query(update: Update, context: CallbackContext) -> None:
     query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) добавлено.')
 
 
+@transaction_handler
 def mod_off_query(update: Update, context: CallbackContext) -> None:
     notification = get_notification_from_query(update, context)
     if not notification:
@@ -63,6 +67,7 @@ def mod_off_query(update: Update, context: CallbackContext) -> None:
     query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) остановлено.')
 
 
+@transaction_handler
 def delete_query(update: Update, context: CallbackContext) -> None:
     notification = get_notification_from_query(update, context)
     if not notification:

@@ -5,6 +5,7 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext, ConversationHandler
 
 from answers import YES, markup_bool, markup_skip
+from db import transaction_handler
 from models.setting import add_setting, get_setting
 from utils.user_data import set_setting
 
@@ -88,6 +89,7 @@ def set_photo(update: Update, context: CallbackContext) -> int:
     return URGENCY
 
 
+@transaction_handler
 def set_urgency(update: Update, context: CallbackContext) -> int:
     urgency_enabled = False
     if update.message.text in YES:

@@ -2,6 +2,7 @@ from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
 from answers import NOW, markup_now
+from db import transaction_handler
 from models.notification import Notification
 from models.history import add_history
 from utils.user_data import get_setting
@@ -35,13 +36,13 @@ def set_pill_dosage(update: Update, context: CallbackContext) -> int:
     return TIME
 
 
+@transaction_handler
 def set_pill_time(update: Update, context: CallbackContext) -> int:
     notification = Notification(
         chat_id=update.message.chat_id,
         name=context.user_data['add_command']['name'],
         dosage=context.user_data['add_command']['dosage'],
     )
-    context.bot.logger.info(f'Add history for chat_id: {notification.chat_id}')
     setting = get_setting(context, notification.chat_id)
 
     time = update.message.text
@@ -50,6 +51,7 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
 
     add_history(context.bot_data['db_session'], notification, setting.timezone, time=time)
 
+    context.bot.logger.info(f'Add history for chat_id: {notification.chat_id}')
     update.message.reply_text(f'Запись {notification.name} ({notification.dosage}) добавлена.')
     return ConversationHandler.END
 

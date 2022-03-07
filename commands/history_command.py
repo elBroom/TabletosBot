@@ -1,6 +1,7 @@
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext
 
+from db import transaction_handler
 from models.history import del_history_row, get_history
 from utils.query import get_history_from_query
 
@@ -8,6 +9,7 @@ from utils.query import get_history_from_query
 DELETE = 'delete_log'
 
 
+@transaction_handler
 def history_command(update: Update, context: CallbackContext) -> None:
     chat_id = update.message.chat_id
 
@@ -27,6 +29,7 @@ def history_command(update: Update, context: CallbackContext) -> None:
         )
 
 
+@transaction_handler
 def delete_log_query(update: Update, context: CallbackContext) -> None:
     history = get_history_from_query(update, context)
     if not history:

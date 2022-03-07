@@ -2,6 +2,7 @@ from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
 from answers import TODAY, NO, markup_today, markup_bool
+from db import transaction_handler
 from models.notification import add_notification, Notification
 from commands.alert_command import alert
 from utils.scheduler import send_to_scheduler
@@ -75,6 +76,7 @@ def set_date_end(update: Update, context: CallbackContext) -> int:
     return save_notification(update, context)
 
 
+@transaction_handler
 def save_notification(update: Update, context: CallbackContext) -> int:
     notification = Notification(
         chat_id=update.message.chat_id,

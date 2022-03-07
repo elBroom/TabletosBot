@@ -34,18 +34,20 @@ def main() -> None:
     # dispatcher.add_error_handler(lambda *args: logger.info('Oops!'))
 
     db = DB(config.DB_PATH)
-    dispatcher.bot_data['db_session'] = db.session
+    dispatcher.bot_data['db'] = db
 
     updater.job_queue.scheduler.start()
     now = datetime.now()
-    for ntf in get_active_notifications(db.session):
-        send_to_scheduler(ntf.setting, ntf, updater.job_queue, alert)
-        if ntf.next_t and ntf.next_t > now:
-            send_to_scheduler_once(ntf.setting, ntf, updater.job_queue, alert, ntf.next_t - now)
+    with db.get_session() as db_session:
+        for ntf in get_active_notifications(db_session):
+            send_to_scheduler(ntf.setting, ntf, updater.job_queue, alert)
+            if ntf.next_t and ntf.next_t > now:
+                send_to_scheduler_once(ntf.setting, ntf, updater.job_queue, alert, ntf.next_t - now)
 
-    time = datetime.strptime('00:00', '%H:%M').time()
+    # time = datetime.strptime('00:00', '%H:%M').time()
+    time = datetime.strptime('13:08', '%H:%M').time()
     time = time.replace(tzinfo=timezone(config.TIMEZONE))
-    make_every_day_task(time, db.session, updater.job_queue, toggle_notifications)
+    make_every_day_task(time, updater.job_queue, toggle_notifications)
 
     updater.start_polling()
     updater.idle()
