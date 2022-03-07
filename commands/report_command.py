@@ -18,7 +18,7 @@ def report_command(update: Update, context: CallbackContext) -> None:
         return
 
     filename = f'/tmp/report_{chat_id}.csv'
-    with open(filename, 'w', encoding='UTF8') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['date', 'name', 'dosage'])
         for hst in history:

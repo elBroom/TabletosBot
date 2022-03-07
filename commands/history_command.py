@@ -18,7 +18,8 @@ def history_command(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('Пока ничего нет')
         return
 
-    for hst in history:
+    limit = 5
+    for hst in history[len(history) - limit:]:
         update.message.reply_text(
             text=f'Ты выпил {hst.name} ({hst.dosage}) в {hst.datetime}',
             reply_markup=InlineKeyboardMarkup([

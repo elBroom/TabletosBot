@@ -44,8 +44,7 @@ def main() -> None:
             if ntf.next_t and ntf.next_t > now:
                 send_to_scheduler_once(ntf.setting, ntf, updater.job_queue, alert, ntf.next_t - now)
 
-    # time = datetime.strptime('00:00', '%H:%M').time()
-    time = datetime.strptime('13:08', '%H:%M').time()
+    time = datetime.strptime('00:00', '%H:%M').time()
     time = time.replace(tzinfo=timezone(config.TIMEZONE))
     make_every_day_task(time, updater.job_queue, toggle_notifications)
 
