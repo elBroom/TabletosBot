@@ -12,7 +12,7 @@ from commands import (
 )
 
 regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
-regex_dosage = re.compile(r'^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?(мг|г|ME|mg|g)$')
+regex_dosage = re.compile(r'^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?(мг|г|МЕ|mg|g|ME)$')
 regex_date_time = re.compile(f'^(202[0-9]-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9])|{"|".join(NOW)}$')
 regex_date = re.compile(f'^(202[0-9]-[0-1][0-9]-[0-3][0-9])|{"|".join(TODAY)}$')
 regex_time = re.compile(r'^[0-2][0-9]:[0-5][0-9]$')
