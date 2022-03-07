@@ -25,6 +25,7 @@ def toggle_notifications(context: CallbackContext) -> None:
 
 
 def alert(context: CallbackContext) -> None:
+    context.bot.logger.info(f'Alert {context.job.name}')
     notification = context.job.context['notification']
     setting = context.job.context['setting']
 
