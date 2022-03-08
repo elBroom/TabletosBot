@@ -1,3 +1,4 @@
+import config
 import os
 
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
@@ -20,10 +21,12 @@ HISTORY_SAVED = 'Запись {notification.name} ({notification.dosage}) доб
 
 
 def toggle_notifications(context: CallbackContext) -> None:
+    # TODO get timezone from settings
+    timezone = config.TIMEZONE
     with context.bot_data['db'].get_session() as db_session:
-        for ntf in remove_old_notification(context.job_queue):
+        for ntf in remove_old_notification(context.job_queue, timezone):
             disable_notification(db_session, ntf)
-        for ntf in get_new_notifications(db_session):
+        for ntf in get_new_notifications(db_session, timezone):
             send_to_scheduler(ntf.setting, ntf, context.job_queue, alert)
 
 

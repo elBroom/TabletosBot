@@ -1,4 +1,5 @@
 import datetime
+import pytz
 
 from sqlalchemy import Boolean, Column, Integer, String, Date, DateTime, ForeignKey, or_
 from sqlalchemy.orm import Session, relationship
@@ -21,8 +22,8 @@ class Notification(Base):
     setting = relationship("Setting", lazy="selectin")
 
 
-def add_notification(session: Session, ntf: Notification):
-    today = datetime.date.today()
+def add_notification(session: Session, ntf: Notification, timezone: str):
+    today = datetime.datetime.now(tz=pytz.timezone(timezone)).date()
     if ntf.date_start:
         ntf.date_start = datetime.datetime.strptime(ntf.date_start, '%Y-%m-%d').date()
     elif ntf.date_start == '':
@@ -38,8 +39,8 @@ def add_notification(session: Session, ntf: Notification):
     return ntf.id
 
 
-def get_active_notifications(session: Session):
-    today = datetime.date.today()
+def get_active_notifications(session: Session, timezone: str):
+    today = datetime.datetime.now(tz=pytz.timezone(timezone)).date()
     qs = session.query(Notification).order_by(Notification.time)
     qs = qs.filter_by(enabled=True)
     qs = qs.filter(or_(Notification.date_start == None, Notification.date_start <= today))
@@ -54,8 +55,8 @@ def get_all_notifications(session: Session, chat_id=None):
     return qs.all()
 
 
-def get_new_notifications(session: Session):
-    today = datetime.date.today()
+def get_new_notifications(session: Session, timezone: str):
+    today = datetime.datetime.now(tz=pytz.timezone(timezone)).date()
     qs = session.query(Notification).order_by(Notification.time)
     qs = qs.filter_by(enabled=True).filter_by(date_start=today)
     return qs.all()

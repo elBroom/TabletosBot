@@ -7,14 +7,13 @@ from models.notification import Notification
 from models.setting import Setting
 
 
-def remove_old_notification(job_queue: JobQueue):
+def remove_old_notification(job_queue: JobQueue, timezone: str):
+    today = datetime.datetime.now(tz=pytz.timezone(timezone)).date()
     for job in job_queue.jobs():
         if 'daily' not in job.name:
             continue
 
         notification = job.context['notification']
-        today = datetime.date.today()
-
         if notification.date_end and notification.date_end < today:
             job.schedule_removal()
             yield notification
@@ -25,7 +24,7 @@ def make_every_day_task(time: datetime.time, job_queue: JobQueue, callback):
 
 
 def send_to_scheduler(setting: Setting, notification: Notification, job_queue: JobQueue, callback):
-    today = datetime.date.today()
+    today = datetime.datetime.now(tz=pytz.timezone(setting.timezone)).date()
     if (
         notification.date_start and notification.date_start > today or
         notification.date_end and notification.date_end < today

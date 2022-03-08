@@ -39,7 +39,7 @@ def main() -> None:
     updater.job_queue.scheduler.start()
     now = datetime.now()
     with db.get_session() as db_session:
-        for ntf in get_active_notifications(db_session):
+        for ntf in get_active_notifications(db_session, config.TIMEZONE):
             send_to_scheduler(ntf.setting, ntf, updater.job_queue, alert)
             if ntf.next_t and ntf.next_t > now:
                 send_to_scheduler_once(ntf.setting, ntf, updater.job_queue, alert, ntf.next_t - now)
