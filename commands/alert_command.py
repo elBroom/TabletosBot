@@ -5,10 +5,10 @@ from telegram.ext import CallbackContext, ConversationHandler
 
 from answers import markup_skip
 from db import transaction_handler
-from models.notification import Notification, get_new_notifications, set_next_notification
+from models.notification import Notification, disable_notification, get_new_notifications, set_next_notification
 from models.history import add_history
 from utils.img import valid_img
-from utils.scheduler import del_old_notification, send_to_scheduler, send_to_scheduler_once, stop_to_scheduler_once
+from utils.scheduler import remove_old_notification, send_to_scheduler, send_to_scheduler_once, stop_to_scheduler_once
 from utils.query import get_notification_from_query
 from utils.user_data import get_setting
 
@@ -19,7 +19,8 @@ HISTORY_SAVED = 'Запись {notification.name} ({notification.dosage}) доб
 
 def toggle_notifications(context: CallbackContext) -> None:
     with context.bot_data['db'].get_session() as db_session:
-        del_old_notification(db_session, context.job_queue)
+        for ntf in remove_old_notification(context.job_queue):
+            disable_notification(db_session, ntf)
         for ntf in get_new_notifications(db_session):
             send_to_scheduler(ntf.setting, ntf, context.job_queue, alert)
 

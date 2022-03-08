@@ -3,11 +3,11 @@ import pytz
 
 from telegram.ext import JobQueue, Job
 
-from models.notification import Notification, enable_notification
+from models.notification import Notification
 from models.setting import Setting
 
 
-def del_old_notification(db_session: 'Session', job_queue: JobQueue):
+def remove_old_notification(job_queue: JobQueue):
     for job in job_queue.jobs():
         if 'daily' not in job.name:
             continue
@@ -17,7 +17,7 @@ def del_old_notification(db_session: 'Session', job_queue: JobQueue):
 
         if notification.date_end and notification.date_end < today:
             job.schedule_removal()
-            enable_notification(db_session, notification)
+            yield notification
 
 
 def make_every_day_task(time: datetime.time, job_queue: JobQueue, callback):
