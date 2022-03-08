@@ -5,7 +5,9 @@ from telegram.ext import CallbackContext, ConversationHandler
 
 from answers import markup_skip
 from db import transaction_handler
-from models.notification import Notification, disable_notification, get_new_notifications, set_next_notification
+from models.notification import (
+    Notification, disable_notification, get_new_notifications, get_notification, set_next_notification
+)
 from models.history import add_history
 from utils.img import valid_img
 from utils.scheduler import remove_old_notification, send_to_scheduler, send_to_scheduler_once, stop_to_scheduler_once
@@ -63,7 +65,7 @@ def alert(context: CallbackContext) -> None:
 def save_history(context: CallbackContext, notification: Notification):
     stop_to_scheduler_once(notification.id, context.job_queue)
     setting = get_setting(context, notification.chat_id)
-    context.bot.logger.info(f'Add row to history for chat_id: {setting.chat_id}')
+    context.bot.logger.info(f'Add row to history for chat_id: {notification.chat_id}')
     add_history(context.chat_data['db_session'], notification, setting.timezone)
 
 
@@ -84,7 +86,7 @@ def take_photo_query(update: Update, context: CallbackContext) -> int:
     if not notification:
         return ConversationHandler.END
 
-    context.user_data['take_photo_query'] = notification
+    context.user_data['take_photo_query'] = notification.id
     query = update.callback_query
     query.message.reply_text('Пришли фото', reply_markup=markup_skip)
     return CHECK
@@ -99,7 +101,9 @@ def check_photo(update: Update, context: CallbackContext) -> int:
         os.remove(file)
         return CHECK
 
-    notification = context.user_data['take_photo_query']
+    notification_id = context.user_data['take_photo_query']
+    chat_id = update.message.chat_id
+    notification = get_notification(context.chat_data['db_session'], notification_id, chat_id)
     save_history(context, notification)
 
     os.remove(file)
@@ -109,7 +113,9 @@ def check_photo(update: Update, context: CallbackContext) -> int:
 
 @transaction_handler
 def skip_photo(update: Update, context: CallbackContext) -> int:
-    notification = context.user_data['take_photo_query']
+    notification_id = context.user_data['take_photo_query']
+    chat_id = update.message.chat_id
+    notification = get_notification(context.chat_data['db_session'], notification_id, chat_id)
     save_history(context, notification)
 
     update.message.reply_text(HISTORY_SAVED.format(notification=notification))
