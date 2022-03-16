@@ -7,7 +7,6 @@ from telegram.ext import CallbackContext, ConversationHandler
 from answers import YES, markup_bool, markup_skip
 from db import transaction_handler
 from models.setting import add_setting, get_setting
-from utils.user_data import set_setting
 
 
 LANGUAGE, TIMEZONE, EMAIL, INTERVAL, PHOTO, URGENCY = range(6)
@@ -106,7 +105,6 @@ def set_urgency(update: Update, context: CallbackContext) -> int:
 
     context.bot.logger.info(f'Add setting for chat_id: {setting.chat_id}')
     add_setting(context.chat_data['db_session'], setting)
-    set_setting(context, setting)
 
     update.message.reply_text('Настройки применены')
     return ConversationHandler.END

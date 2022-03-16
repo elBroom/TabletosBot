@@ -13,7 +13,7 @@ from models.history import add_history
 from utils.img import valid_img
 from utils.scheduler import remove_old_notification, send_to_scheduler, send_to_scheduler_once, stop_to_scheduler_once
 from utils.query import get_notification_from_query
-from utils.user_data import get_setting
+
 
 TAKE, TAKEPHOTO, FORGOT, LATER = 'take', 'take_photo', 'forgot', 'later'
 CHECK, SAVE = range(2)
@@ -37,44 +37,43 @@ def toggle_notifications(context: CallbackContext) -> None:
 def alert(context: CallbackContext) -> None:
     context.bot.logger.info(f'Alert {context.job.name}')
     ntf = context.job.context['notification']
-    setting = get_setting(context, ntf.chat_id)
+    with context.bot_data['db'].get_session() as db_session:
+        notification = get_notification(db_session, ntf.id, ntf.chat_id)
 
-    buttons = []
-    if setting.take_photo:
-        buttons.append(
-            InlineKeyboardButton(text='Выпил', callback_data=f'{TAKEPHOTO} {ntf.id}'),
-        )
-    else:
-        buttons.append(
-            InlineKeyboardButton(text='Выпил', callback_data=f'{TAKE} {ntf.id}'),
-        )
+        buttons = []
+        if notification.setting.take_photo:
+            buttons.append(
+                InlineKeyboardButton(text='Выпил', callback_data=f'{TAKEPHOTO} {notification.id}'),
+            )
+        else:
+            buttons.append(
+                InlineKeyboardButton(text='Выпил', callback_data=f'{TAKE} {notification.id}'),
+            )
 
-    if setting.urgency_enabled:
-        job = send_to_scheduler_once(setting, ntf, context.job_queue, alert)
-        with context.bot_data['db'].get_session() as db_session:
-            notification = get_notification(db_session, ntf.id, ntf.chat_id)
+        if notification.setting.urgency_enabled:
+            job = send_to_scheduler_once(notification.setting, notification, context.job_queue, alert)
+
             set_next_notification(db_session, notification, job.next_t)
-        buttons.append(
-            InlineKeyboardButton(text='Забыл', callback_data=f'{FORGOT} {ntf.id}'),
-        )
-    else:
-        buttons.append(
-            InlineKeyboardButton(text='Отложить', callback_data=f'{LATER} {ntf.id}'),
-        )
+            buttons.append(
+                InlineKeyboardButton(text='Забыл', callback_data=f'{FORGOT} {notification.id}'),
+            )
+        else:
+            buttons.append(
+                InlineKeyboardButton(text='Отложить', callback_data=f'{LATER} {notification.id}'),
+            )
 
-    context.bot.logger.info(f'Send notification for chat_id: {ntf.chat_id}')
+    context.bot.logger.info(f'Send notification for chat_id: {notification.chat_id}')
     context.bot.send_message(
-        ntf.chat_id,
-        text=f"Тэкс, тебе надо выпить таблетки {ntf.name} ({ntf.dosage}).",
+        notification.chat_id,
+        text=f"Тэкс, тебе надо выпить таблетки {notification.name} ({notification.dosage}).",
         reply_markup=InlineKeyboardMarkup([buttons]),
     )
 
 
 def save_history(context: CallbackContext, notification: Notification):
     stop_to_scheduler_once(notification.id, context.job_queue)
-    setting = get_setting(context, notification.chat_id)
     context.bot.logger.info(f'Add row to history for chat_id: {notification.chat_id}')
-    add_history(context.chat_data['db_session'], notification, setting.timezone)
+    add_history(context.chat_data['db_session'], notification, notification.setting.timezone)
 
 
 @transaction_handler
@@ -148,10 +147,9 @@ def later_query(update: Update, context: CallbackContext) -> None:
     if not notification:
         return
 
-    setting = get_setting(context, notification.chat_id)
-    job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
+    job = send_to_scheduler_once(notification.setting, notification, context.job_queue, alert)
     set_next_notification(context.chat_data['db_session'], notification, job.next_t)
 
     context.bot.logger.info(f'Notification delayed for chat_id: {notification.chat_id}')
     query = update.callback_query
-    query.message.reply_text(f'Напоминание перенесено на {setting.interval_alert} минут.')
+    query.message.reply_text(f'Напоминание перенесено на {notification.setting.interval_alert} минут.')

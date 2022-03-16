@@ -4,9 +4,9 @@ from telegram.ext import CallbackContext, ConversationHandler
 from answers import TODAY, NO, markup_today, markup_bool
 from db import transaction_handler
 from models.notification import add_notification, Notification
+from models.setting import get_setting
 from commands.alert_command import alert
 from utils.scheduler import send_to_scheduler
-from utils.user_data import get_setting
 
 
 NAME, DOSAGE, TIME, DATE_SET, DATE_START, DATE_END = range(6)
@@ -88,7 +88,7 @@ def save_notification(update: Update, context: CallbackContext) -> int:
     )
     context.bot.logger.info(f'Add notification for chat_id: {notification.chat_id}')
 
-    setting = get_setting(context, notification.chat_id)
+    setting = get_setting(context.chat_data['db_session'], notification.chat_id)
     add_notification(context.chat_data['db_session'], notification, setting.timezone)
     send_to_scheduler(setting, notification, context.job_queue, alert)
 

@@ -5,7 +5,7 @@ from answers import NOW, markup_now
 from db import transaction_handler
 from models.notification import Notification
 from models.history import add_history
-from utils.user_data import get_setting
+from models.setting import get_setting
 
 
 NAME, DOSAGE, TIME = range(3)
@@ -43,12 +43,12 @@ def set_pill_time(update: Update, context: CallbackContext) -> int:
         name=context.user_data['add_command']['name'],
         dosage=context.user_data['add_command']['dosage'],
     )
-    setting = get_setting(context, notification.chat_id)
 
     time = update.message.text
     if update.message.text in NOW:
         time = ''
 
+    setting = get_setting(context.chat_data['db_session'], notification.chat_id)
     add_history(context.chat_data['db_session'], notification, setting.timezone, time=time)
 
     context.bot.logger.info(f'Add history for chat_id: {notification.chat_id}')

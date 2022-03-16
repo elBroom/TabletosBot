@@ -26,6 +26,6 @@ def transaction_handler(func):
 
             context.chat_data['db_session'] = db_session
             res = func(update, context)
-            del context.chat_data['db_session']
-            return res
+        del context.chat_data['db_session']
+        return res
     return wrapper
