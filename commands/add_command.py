@@ -22,7 +22,7 @@ def add_command(update: Update, context: CallbackContext) -> int:
 def set_pill_name(update: Update, context: CallbackContext) -> int:
     context.user_data['add_command']['name'] = update.message.text
     update.message.reply_text(
-        'Какую дозу выпил? (формат 25мг/0.25г/1500ME)',
+        'Какую дозу выпил? (формат 25мг/0.25г/1500ME/2мл/1амп)',
     )
     return DOSAGE
 

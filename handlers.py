@@ -11,8 +11,8 @@ from commands import (
     clean_command, stop_command, add_command,
 )
 
-regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
-regex_dosage = re.compile(r'^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?(мг|г|МЕ|mg|g|ME)$')
+regex_name = re.compile(r'^[\w\- ]{1,40}$')
+regex_dosage = re.compile(r'^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?(мг|г|МЕ|мл|амп|mg|g|ME|ml)$')
 regex_date_time = re.compile(f'^((202[0-9]-[0-1][0-9]-[0-3][0-9] )?[0-2][0-9]:[0-5][0-9])|{"|".join(NOW)}|$')
 regex_date = re.compile(f'^(202[0-9]-[0-1][0-9]-[0-3][0-9])|{"|".join(TODAY)}$')
 regex_time = re.compile(r'^[0-2][0-9]:[0-5][0-9]$')
@@ -51,7 +51,7 @@ handlers = [
     ConversationHandler(
         entry_points=[CommandHandler('new', new_command.new_command)],
         states={
-            new_command.NAME: [MessageHandler(Filters.regex('^\w+$'), new_command.set_pill_name)],
+            new_command.NAME: [MessageHandler(Filters.regex(regex_name), new_command.set_pill_name)],
             new_command.DOSAGE: [MessageHandler(Filters.regex(regex_dosage), new_command.set_pill_dosage)],
             new_command.TIME: [MessageHandler(Filters.regex(regex_time), new_command.set_pill_time)],
             new_command.DATE_SET: [MessageHandler(Filters.regex(regex_bool), new_command.data_setting)],
@@ -85,7 +85,7 @@ handlers = [
     ConversationHandler(
         entry_points=[CommandHandler('add', add_command.add_command)],
         states={
-            add_command.NAME: [MessageHandler(Filters.regex('^\w+$'), add_command.set_pill_name)],
+            add_command.NAME: [MessageHandler(Filters.regex(regex_name), add_command.set_pill_name)],
             add_command.DOSAGE: [MessageHandler(Filters.regex(regex_dosage), add_command.set_pill_dosage)],
             add_command.TIME: [MessageHandler(Filters.regex(regex_date_time), add_command.set_pill_time)],
         },
