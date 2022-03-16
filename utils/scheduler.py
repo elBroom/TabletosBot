@@ -35,7 +35,7 @@ def send_to_scheduler(setting: Setting, notification: Notification, job_queue: J
     time = time.replace(tzinfo=pytz.timezone(setting.timezone))
     job_queue.run_daily(
         callback=callback, time=time, name=f'{notification.id} daily',
-        context={'notification': notification, 'setting': setting},
+        context={'notification': notification},
     )
 
 
@@ -46,7 +46,7 @@ def send_to_scheduler_once(
         timedelta = datetime.timedelta(minutes=setting.interval_alert)
     return job_queue.run_once(
         callback, timedelta, name=f'{notification.id} once',
-        context={'notification': notification, 'setting': setting},
+        context={'notification': notification},
     )
 
 

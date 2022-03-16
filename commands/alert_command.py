@@ -25,42 +25,47 @@ def toggle_notifications(context: CallbackContext) -> None:
     timezone = config.TIMEZONE
     with context.bot_data['db'].get_session() as db_session:
         for ntf in remove_old_notification(context.job_queue, timezone):
-            disable_notification(db_session, ntf)
+            context.bot.logger.info(f'Expire notification {ntf.id}')
+            # TODO get all notifications
+            notification = get_notification(db_session, ntf.id, ntf.chat_id)
+            disable_notification(db_session, notification)
         for ntf in get_new_notifications(db_session, timezone):
+            context.bot.logger.info(f'Enable notification {ntf.id}')
             send_to_scheduler(ntf.setting, ntf, context.job_queue, alert)
 
 
 def alert(context: CallbackContext) -> None:
     context.bot.logger.info(f'Alert {context.job.name}')
-    notification = context.job.context['notification']
-    setting = context.job.context['setting']
+    ntf = context.job.context['notification']
+    setting = get_setting(context, ntf.chat_id)
 
     buttons = []
     if setting.take_photo:
         buttons.append(
-            InlineKeyboardButton(text='Выпил', callback_data=f'{TAKEPHOTO} {notification.id}'),
+            InlineKeyboardButton(text='Выпил', callback_data=f'{TAKEPHOTO} {ntf.id}'),
         )
     else:
         buttons.append(
-            InlineKeyboardButton(text='Выпил', callback_data=f'{TAKE} {notification.id}'),
+            InlineKeyboardButton(text='Выпил', callback_data=f'{TAKE} {ntf.id}'),
         )
 
     if setting.urgency_enabled:
-        job = send_to_scheduler_once(setting, notification, context.job_queue, alert)
+        job = send_to_scheduler_once(setting, ntf, context.job_queue, alert)
         with context.bot_data['db'].get_session() as db_session:
+            notification = get_notification(db_session, ntf.id, ntf.chat_id)
             set_next_notification(db_session, notification, job.next_t)
         buttons.append(
-            InlineKeyboardButton(text='Забыл', callback_data=f'{FORGOT} {notification.id}'),
+            InlineKeyboardButton(text='Забыл', callback_data=f'{FORGOT} {ntf.id}'),
         )
     else:
         buttons.append(
-            InlineKeyboardButton(text='Отложить', callback_data=f'{LATER} {notification.id}'),
+            InlineKeyboardButton(text='Отложить', callback_data=f'{LATER} {ntf.id}'),
         )
 
-    context.bot.logger.info(f'Send notification for chat_id: {notification.chat_id}')
+    context.bot.logger.info(f'Send notification for chat_id: {ntf.chat_id}')
     context.bot.send_message(
-        notification.chat_id,
-        text=f"Тэкс, тебе надо выпить таблетки {notification.name} ({notification.dosage}).",
+        ntf.chat_id,
+        text=f"Тэкс, тебе надо выпить таблетки {ntf.name} ({ntf.dosage}).",
         reply_markup=InlineKeyboardMarkup([buttons]),
     )
 
