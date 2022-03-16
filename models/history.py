@@ -24,8 +24,13 @@ class History(Base):
 
 
 def add_history(session: Session, ntf: 'Notification', timezone: str, time: str = ''):
+    now = datetime.datetime.now(pytz.timezone(timezone))
     if not time:
-        created_at = datetime.datetime.now(pytz.timezone(timezone))
+        created_at = now
+    elif '-' not in time:
+        created_at = datetime.datetime.strptime(
+            f'{now.strftime("%Y-%m-%d")} {time}', '%Y-%m-%d %H:%M',
+        ).replace(tzinfo=pytz.timezone(timezone))
     else:
         created_at = datetime.datetime.strptime(time, '%Y-%m-%d %H:%M').replace(tzinfo=pytz.timezone(timezone))
     session.add(History(

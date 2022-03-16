@@ -30,7 +30,7 @@ def set_pill_name(update: Update, context: CallbackContext) -> int:
 def set_pill_dosage(update: Update, context: CallbackContext) -> int:
     context.user_data['add_command']['dosage'] = update.message.text
     update.message.reply_text(
-        'В какое время выпил таблетку? (формат 2022-12-01 15:30)',
+        'В какое время выпил таблетку? (формат 15:30/2022-12-01 15:30)',
         reply_markup=markup_now,
     )
     return TIME
