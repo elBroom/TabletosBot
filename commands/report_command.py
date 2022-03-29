@@ -3,6 +3,7 @@ import os
 
 from telegram import Update
 from telegram.ext import CallbackContext
+from transliterate import translit
 
 from db import transaction_handler
 from models.history import get_history
@@ -18,12 +19,17 @@ def report_command(update: Update, context: CallbackContext) -> None:
         return
 
     filename = f'/tmp/report_{chat_id}.csv'
-    with open(filename, 'w', encoding='utf-8-sig') as f:
+    with open(filename, 'w', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['date', 'name', 'dosage'])
         for hst in history:
-            writer.writerow([hst.datetime, hst.name, hst.dosage.replace(',', '.')])
+            writer.writerow(list(convert_data([hst.datetime, hst.name, hst.dosage.replace(',', '.')])))
 
     context.bot.logger.info(f'Send report for chat_id: {chat_id}')
     update.message.reply_document(document=open(filename, 'rb'), filename='report.csv')
     os.remove(filename)
+
+
+def convert_data(data: list):
+    for row in data:
+        yield translit(row, 'ru', reversed=True)
