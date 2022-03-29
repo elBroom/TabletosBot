@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
-from answers import TODAY, NO, markup_today, markup_bool
+from answers import TODAY, NO, MEASURING_RUS, markup_today, markup_bool
 from db import transaction_handler
 from models.notification import add_notification, Notification
 from models.setting import get_setting
@@ -23,7 +23,7 @@ def new_command(update: Update, context: CallbackContext) -> int:
 def set_pill_name(update: Update, context: CallbackContext) -> int:
     context.user_data['new_command']['name'] = update.message.text
     update.message.reply_text(
-        'В какой дозе нужно пить? (формат 25мг/0.25г/1500ME/2мл/1амп)',
+        f'В какой дозе нужно пить?\n(формат 0.25{"/".join(MEASURING_RUS)})',
     )
     return DOSAGE
 

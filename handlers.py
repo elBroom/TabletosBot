@@ -4,7 +4,7 @@ from telegram.ext import (
     CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler,
 )
 
-from answers import YES, NO, NOW, TODAY, SKIP
+from answers import YES, NO, NOW, TODAY, SKIP, MEASURING_RUS, MEASURING_EN
 from commands import (
     start_command, help_command, list_command, history_command,
     setting_command, new_command, alert_command, report_command,
@@ -12,11 +12,11 @@ from commands import (
 )
 
 regex_name = re.compile(r'^[\w\- ]{1,40}$')
-regex_dosage = re.compile(r'^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?(мг|г|МЕ|мл|амп|mg|g|ME|ml)$')
+regex_dosage = re.compile(f"^[0-9]{1,10}((,|\.)[0-9]{1,4})? ?({'|'.join(MEASURING_RUS+MEASURING_EN)})$")
 regex_date_time = re.compile(f'^((202[0-9]-[0-1][0-9]-[0-3][0-9] )?[0-2][0-9]:[0-5][0-9])|{"|".join(NOW)}|$')
 regex_date = re.compile(f'^(202[0-9]-[0-1][0-9]-[0-3][0-9])|{"|".join(TODAY)}$')
 regex_time = re.compile(r'^[0-2][0-9]:[0-5][0-9]$')
-regex_bool = re.compile(f"^{'|'.join(YES)}|{'|'.join(NO)}$")
+regex_bool = re.compile(f"^{'|'.join(YES+NO)}$")
 regex_skip = re.compile(f"^{'|'.join(SKIP)}$")
 
 
