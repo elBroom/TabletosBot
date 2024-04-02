@@ -2,6 +2,7 @@ import config
 import os
 
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
+from telegram.error import Unauthorized
 from telegram.ext import CallbackContext, ConversationHandler
 
 from answers import markup_skip
@@ -11,7 +12,7 @@ from models.notification import (
 )
 from models.history import add_history
 from utils.img import valid_img
-from utils.scheduler import remove_old_notification, send_to_scheduler, send_to_scheduler_once, stop_to_scheduler_once
+from utils.scheduler import remove_old_notification, send_to_scheduler, send_to_scheduler_once, stop_to_scheduler_once, stop_to_scheduler
 from utils.query import get_notification_from_query
 
 
@@ -63,11 +64,14 @@ def alert(context: CallbackContext) -> None:
             )
 
     context.bot.logger.info(f'Send notification for chat_id: {notification.chat_id}')
-    context.bot.send_message(
-        notification.chat_id,
-        text=f"Тэкс, тебе надо выпить таблетки {notification.name} ({notification.dosage}).",
-        reply_markup=InlineKeyboardMarkup([buttons]),
-    )
+    try:
+        context.bot.send_message(
+            notification.chat_id,
+            text=f"Тэкс, тебе надо выпить таблетки {notification.name} ({notification.dosage}).",
+            reply_markup=InlineKeyboardMarkup([buttons]),
+        )
+    except Unauthorized:
+        context.bot.logger.info(f'chat_id: {notification.chat_id} is blocked')
 
 
 def save_history(context: CallbackContext, notification: Notification):
