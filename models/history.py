@@ -43,8 +43,12 @@ def add_history(session: Session, ntf: 'Notification', timezone: str, time: str 
     return ntf.id
 
 
-def get_history(session: Session, chat_id: int):
+def get_history(session: Session, chat_id: int, date: None | datetime.date = None, limit: int = None):
     qs = session.query(History).filter_by(chat_id=chat_id).order_by(History.created_at)
+    if date:
+        qs = qs.filter(History.created_at >= date)
+    if limit is not None:
+        qs = qs.limit(limit)
     return qs.all()
 
 

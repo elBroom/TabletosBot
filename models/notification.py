@@ -31,8 +31,6 @@ def add_notification(session: Session, ntf: Notification, timezone: str):
 
     if ntf.date_end:
         ntf.date_end = datetime.datetime.strptime(ntf.date_end, '%Y-%m-%d').date()
-    elif ntf.date_end == '':
-        ntf.date_end = today
 
     session.add(ntf)
     session.commit()
@@ -48,10 +46,12 @@ def get_active_notifications(session: Session, timezone: str):
     return qs.all()
 
 
-def get_all_notifications(session: Session, chat_id=None):
+def get_all_notifications(session: Session, chat_id=None, enabled=None):
     qs = session.query(Notification).order_by(Notification.time)
     if chat_id:
         qs = qs.filter_by(chat_id=chat_id)
+    if enabled is not None:
+        qs = qs.filter_by(enabled=enabled)
     return qs.all()
 
 

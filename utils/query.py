@@ -1,7 +1,7 @@
 import re
 
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 
 from db import NoResultFound
@@ -9,7 +9,7 @@ from models.notification import Notification, get_notification
 from models.history import History, get_history_row
 
 
-async def get_notification_from_query(update: Update, context: CallbackContext) -> Notification:
+async def get_notification_from_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Notification:
     query = update.callback_query
     await query.answer()
 
@@ -23,7 +23,7 @@ async def get_notification_from_query(update: Update, context: CallbackContext) 
         await query.edit_message_text('Напоминание не найдено.')
 
 
-async def get_history_from_query(update: Update, context: CallbackContext) -> History:
+async def get_history_from_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> History:
     query = update.callback_query
     await query.answer()
 

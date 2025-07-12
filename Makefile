@@ -10,7 +10,7 @@ restart:
 	docker-compose restart
 
 start:
-    source venv/bin/activate && python3 main.py &
+	. venv/bin/activate && python3 main.py &
 
 create_migrations:
 	touch migrations/$(shell date +"%s").sql

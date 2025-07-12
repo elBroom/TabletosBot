@@ -24,6 +24,7 @@ handlers = [
     CommandHandler('start', start_command.start_command),
     CommandHandler('help', help_command.help_command),
     CommandHandler('report', report_command.report_command),
+    CommandHandler('report_quarter', report_command.report_last_quarter_command),
     CommandHandler('clean', clean_command.clean_command),
     CommandHandler('stop', stop_command.stop_command),
 
@@ -58,6 +59,8 @@ handlers = [
     ),
 
     CommandHandler('list', list_command.list_command),
+    CommandHandler('list_active', list_command.active_list_command),
+    CommandHandler('list_waiting', list_command.waiting_list_command),
     CallbackQueryHandler(list_command.mod_on_query, pattern=f'^{list_command.ON} [0-9]+$'),
     CallbackQueryHandler(list_command.mod_off_query, pattern=f'^{list_command.OFF} [0-9]+$'),
     CallbackQueryHandler(list_command.delete_query, pattern=f'^{list_command.DELETE} [0-9]+$'),

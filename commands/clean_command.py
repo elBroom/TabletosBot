@@ -1,5 +1,5 @@
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 
 from db import transaction_handler
 from models.notification import del_notifications, get_all_notifications
@@ -7,7 +7,7 @@ from utils.scheduler import stop_to_scheduler
 
 
 @transaction_handler
-async def clean_command(update: Update, context: CallbackContext) -> None:
+async def clean_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.message.chat_id
 
     context.bot_data['logger'].info(f'Clean all notification for chat_id: {chat_id}')

@@ -74,6 +74,7 @@ async def take_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         return
 
     save_history(context, notification)
+    await update.callback_query.answer()
     await update.callback_query.edit_message_text(HISTORY_SAVED.format(notification=notification))
 
 @transaction_handler
@@ -84,6 +85,7 @@ async def forgot_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     stop_to_scheduler_once(notification.id, context.job_queue)
 
+    await update.callback_query.answer()
     await update.callback_query.edit_message_text('Печально.')
 
 
@@ -97,4 +99,5 @@ async def later_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     set_next_notification(context.bot_data['db_session'], notification, job.next_t)
 
     context.bot_data['logger'].info(f'Notification delayed for chat_id: {notification.chat_id}')
+    await update.callback_query.answer()
     await update.callback_query.edit_message_text(f'Напоминание перенесено на {notification.setting.interval_alert} минут.')
