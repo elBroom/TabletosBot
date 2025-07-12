@@ -1,7 +1,7 @@
-from telegram import Update
+from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import ContextTypes, ConversationHandler
 
-from answers import TODAY, NO, MEASURING_RUS, markup_today, markup_bool
+from answers import TODAY, NO, MEASURING_RUS, SKIP, markup_today, markup_bool
 from db import transaction_handler
 from models.notification import add_notification, Notification
 from models.setting import get_setting
@@ -50,7 +50,7 @@ async def data_setting(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         return await save_notification(update, context)
 
     await update.message.reply_text(
-        'Первый день приема таблеток? (формат 2022-12-01)',
+        'Первый день приема таблеток? (формат 2025-12-01)',
         reply_markup=markup_today,
     )
     return DATE_START
@@ -62,17 +62,15 @@ async def set_date_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         date = update.message.text
     context.user_data['new_command']['date_start'] = date
     await update.message.reply_text(
-        'Последний день приема таблеток? (формат 2022-12-01)',
-        reply_markup=markup_today,
+        'Последний день приема таблеток? (формат 2025-12-01)',
+        reply_markup=ReplyKeyboardMarkup([[TODAY[0], SKIP[0]]], one_time_keyboard=True)
     )
     return DATE_END
 
 
 async def set_date_end(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    date = ''
-    if update.message.text not in TODAY:
-        date = update.message.text
-    context.user_data['new_command']['date_end'] = date
+    if update.message.text not in TODAY+SKIP:
+        context.user_data['new_command']['date_end'] = update.message.text
     return await save_notification(update, context)
 
 

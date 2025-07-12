@@ -31,6 +31,8 @@ def add_notification(session: Session, ntf: Notification, timezone: str):
 
     if ntf.date_end:
         ntf.date_end = datetime.datetime.strptime(ntf.date_end, '%Y-%m-%d').date()
+    elif ntf.date_start == '':
+        ntf.date_end = None
 
     session.add(ntf)
     session.commit()

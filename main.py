@@ -5,7 +5,7 @@ from pytz import timezone
 from datetime import datetime
 
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application
 
 from commands.alert_command import alert, toggle_notifications
 from db import DB
@@ -16,7 +16,7 @@ from utils.scheduler import send_to_scheduler, send_to_scheduler_once, make_ever
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.WARN,
+    level=getattr(config, 'LOGLEVEL', logging.WARN),
     filename='TabletosBot.log',
 )
 logging.Formatter.converter = lambda *args: datetime.now(tz=timezone(config.TIMEZONE)).timetuple()
