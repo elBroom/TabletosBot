@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 
 
-def help_command(update: Update, context: CallbackContext) -> None:
+async def help_command(update: Update, context: CallbackContext) -> None:
     """
     /setcommands
     setting - Настроить бот
@@ -24,4 +24,4 @@ def help_command(update: Update, context: CallbackContext) -> None:
         '/stop - Остановить все напоминания',
         '/clean - Удалить все напоминания',
     ]
-    update.message.reply_text('\n'.join(commands))
+    await update.effective_message.reply_text('\n'.join(commands))

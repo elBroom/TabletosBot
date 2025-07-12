@@ -9,5 +9,8 @@ restart:
 	git pull origin master --rebase
 	docker-compose restart
 
+start:
+    docker-compose start
+
 create_migrations:
 	touch migrations/$(shell date +"%s").sql

@@ -9,29 +9,29 @@ from models.notification import Notification, get_notification
 from models.history import History, get_history_row
 
 
-def get_notification_from_query(update: Update, context: CallbackContext) -> Notification:
+async def get_notification_from_query(update: Update, context: CallbackContext) -> Notification:
     query = update.callback_query
-    query.answer()
+    await query.answer()
 
-    chat_id = query.message.chat_id
+    chat_id = query.message.chat.id
     try:
         num = re.match(r"^\w+ (?P<num>\d+)$", query.data).group('num')
-        return get_notification(context.chat_data['db_session'], int(num), chat_id)
+        return get_notification(context.bot_data['db_session'], int(num), chat_id)
     except (LookupError, ValueError):
-        query.message.reply_text('Не верный формат num')
+        await query.edit_message_text('Не верный формат num')
     except NoResultFound:
-        query.message.reply_text('Напоминание не найдено.')
+        await query.edit_message_text('Напоминание не найдено.')
 
 
-def get_history_from_query(update: Update, context: CallbackContext) -> History:
+async def get_history_from_query(update: Update, context: CallbackContext) -> History:
     query = update.callback_query
-    query.answer()
+    await query.answer()
 
-    chat_id = query.message.chat_id
+    chat_id = query.message.chat.id
     try:
         num = re.match(r"^\w+ (?P<num>\d+)$", query.data).group('num')
-        return get_history_row(context.chat_data['db_session'], int(num), chat_id)
+        return get_history_row(context.bot_data['db_session'], int(num), chat_id)
     except (LookupError, ValueError):
-        query.message.reply_text('Не верный формат num')
+        await query.edit_message_text('Не верный формат num')
     except NoResultFound:
-        query.message.reply_text('Запись не найдена.')
+        await query.edit_message_text('Запись не найдена.')

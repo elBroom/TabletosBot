@@ -9,11 +9,8 @@ from models.setting import Setting
 
 def remove_old_notification(job_queue: JobQueue, timezone: str):
     today = datetime.datetime.now(tz=pytz.timezone(timezone)).date()
-    for job in job_queue.jobs():
-        if 'daily' not in job.name:
-            continue
-
-        notification = job.context['notification']
+    for job in job_queue.jobs('daily'):
+        notification = job.job_kwargs['notification']
         if notification.date_end and notification.date_end < today:
             job.schedule_removal()
             yield notification
@@ -35,7 +32,8 @@ def send_to_scheduler(setting: Setting, notification: Notification, job_queue: J
     time = time.replace(tzinfo=pytz.timezone(setting.timezone))
     job_queue.run_daily(
         callback=callback, time=time, name=f'{notification.id} daily',
-        context={'notification': notification},
+        chat_id=notification.chat_id,
+        data={'notification': notification},
     )
 
 
@@ -46,7 +44,8 @@ def send_to_scheduler_once(
         timedelta = datetime.timedelta(minutes=setting.interval_alert)
     return job_queue.run_once(
         callback, timedelta, name=f'{notification.id} once',
-        context={'notification': notification},
+        chat_id=notification.chat_id,
+        data={'notification': notification},
     )
 
 

@@ -2,7 +2,7 @@ import csv
 import os
 
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import ContextTypes
 from transliterate import translit
 
 from db import transaction_handler
@@ -10,12 +10,12 @@ from models.history import get_history
 
 
 @transaction_handler
-def report_command(update: Update, context: CallbackContext) -> None:
+async def report_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.message.chat_id
 
-    history = get_history(context.chat_data['db_session'], chat_id)
+    history = get_history(context.bot_data['db_session'], chat_id)
     if not history:
-        update.message.reply_text('Пока ничего нет')
+        await update.message.reply_text('Пока ничего нет')
         return
 
     filename = f'/tmp/report_{chat_id}.csv'
@@ -25,8 +25,8 @@ def report_command(update: Update, context: CallbackContext) -> None:
         for hst in history:
             writer.writerow(list(convert_data([hst.datetime, hst.name, hst.dosage.replace(',', '.')])))
 
-    context.bot.logger.info(f'Send report for chat_id: {chat_id}')
-    update.message.reply_document(document=open(filename, 'rb'), filename='report.csv')
+    context.bot_data['logger'].info(f'Send report for chat_id: {chat_id}')
+    await update.message.reply_document(document=open(filename, 'rb'), filename='report.csv')
     os.remove(filename)
 
 

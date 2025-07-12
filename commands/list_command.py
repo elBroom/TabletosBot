@@ -1,5 +1,5 @@
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, ContextTypes
 
 from db import transaction_handler
 from commands.alert_command import alert
@@ -12,12 +12,12 @@ OFF, ON, DELETE = 'off', 'on', 'delete_pill'
 
 
 @transaction_handler
-def list_command(update: Update, context: CallbackContext) -> None:
+async def list_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.message.chat_id
 
-    notifications = get_all_notifications(context.chat_data['db_session'], chat_id)
+    notifications = get_all_notifications(context.bot_data['db_session'], chat_id)
     if not notifications:
-        update.message.reply_text('Пока ничего нет')
+        await update.message.reply_text('Пока ничего нет')
         return
 
     for ntf in notifications:
@@ -36,43 +36,40 @@ def list_command(update: Update, context: CallbackContext) -> None:
         msg = f'Тебе нужно выпить {ntf.name} ({ntf.dosage}) в {ntf.time}'
         if ntf.date_start and ntf.date_end:
             msg += f' с {ntf.date_start} по {ntf.date_end}'
-        update.message.reply_text(msg, reply_markup=InlineKeyboardMarkup([buttons]))
+        await update.message.reply_text(msg, reply_markup=InlineKeyboardMarkup([buttons]))
 
 
 @transaction_handler
-def mod_on_query(update: Update, context: CallbackContext) -> None:
-    notification = get_notification_from_query(update, context)
+async def mod_on_query(update: Update, context: CallbackContext) -> None:
+    notification = await get_notification_from_query(update, context)
     if not notification:
         return
-    enable_notification(context.chat_data['db_session'], notification)
+    enable_notification(context.bot_data['db_session'], notification)
 
     send_to_scheduler(notification.setting, notification, context.job_queue, alert)
 
-    query = update.callback_query
-    query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) добавлено.')
+    await update.callback_query.edit_message_text(f'Напоминание {notification.name} ({notification.dosage}) добавлено.')
 
 
 @transaction_handler
-def mod_off_query(update: Update, context: CallbackContext) -> None:
-    notification = get_notification_from_query(update, context)
+async def mod_off_query(update: Update, context: CallbackContext) -> None:
+    notification = await get_notification_from_query(update, context)
     if not notification:
         return
 
     stop_to_scheduler(notification.id, context.job_queue)
-    disable_notification(context.chat_data['db_session'], notification)
+    disable_notification(context.bot_data['db_session'], notification)
 
-    query = update.callback_query
-    query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) остановлено.')
+    await update.callback_query.edit_message_text(f'Напоминание {notification.name} ({notification.dosage}) остановлено.')
 
 
 @transaction_handler
-def delete_query(update: Update, context: CallbackContext) -> None:
-    notification = get_notification_from_query(update, context)
+async def delete_query(update: Update, context: CallbackContext) -> None:
+    notification = await get_notification_from_query(update, context)
     if not notification:
         return
 
     stop_to_scheduler(notification.id, context.job_queue)
-    del_notifications(context.chat_data['db_session'], notification)
+    del_notifications(context.bot_data['db_session'], notification)
 
-    query = update.callback_query
-    query.message.reply_text(f'Напоминание {notification.name} ({notification.dosage}) удалено.')
+    await update.callback_query.edit_message_text(f'Напоминание {notification.name} ({notification.dosage}) удалено.')

@@ -11,7 +11,6 @@ class Setting(Base):
     chat_id = Column(Integer, unique=True)
     timezone = Column(String, default='Europe/Moscow')
     interval_alert = Column(Integer, default=20)
-    take_photo = Column(Boolean, default=True)
     urgency_enabled = Column(Boolean, default=True)
 
 
