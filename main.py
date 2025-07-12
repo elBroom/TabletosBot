@@ -16,7 +16,7 @@ from utils.scheduler import send_to_scheduler, send_to_scheduler_once, make_ever
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO,
+    level=logging.WARN,
     filename='TabletosBot.log',
 )
 logging.Formatter.converter = lambda *args: datetime.now(tz=timezone(config.TIMEZONE)).timetuple()
@@ -24,11 +24,9 @@ logger = logging.getLogger('TabletosBot')
 
 
 def main() -> None:
-    logger.info("start app")
     app = Application.builder().token(config.TOKEN).build()
     for handler in handlers:
         app.add_handler(handler)
-    app.add_error_handler(lambda *args: logger.info('Oops!'))
     app.bot_data['logger'] = logger
 
     db = DB(config.DB_PATH)

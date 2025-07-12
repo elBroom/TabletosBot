@@ -25,7 +25,7 @@ async def report_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         for hst in history:
             writer.writerow(list(convert_data([hst.datetime, hst.name, hst.dosage.replace(',', '.')])))
 
-    context.bot_data['logger'].info(f'Send report for chat_id: {chat_id}')
+    context.bot_data['logger'].warn(f'Send report for chat_id: {chat_id}')
     await update.message.reply_document(document=open(filename, 'rb'), filename='report.csv')
     os.remove(filename)
 

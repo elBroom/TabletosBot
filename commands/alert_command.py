@@ -37,8 +37,6 @@ async def alert(context: ContextTypes.DEFAULT_TYPE) -> None:
     with context.bot_data['db'].get_session() as db_session:
         notification = get_notification(db_session, ntf.id, ntf.chat_id)
 
-        context.bot_data['logger'].info(f'TEST1111')
-
         buttons = [
             InlineKeyboardButton(text='Выпил', callback_data=f'{TAKE} {notification.id}'),
         ]
@@ -55,7 +53,7 @@ async def alert(context: ContextTypes.DEFAULT_TYPE) -> None:
                 InlineKeyboardButton(text='Отложить', callback_data=f'{LATER} {notification.id}'),
             )
 
-    context.bot_data['logger'].info(f'Send notification for chat_id: {notification.chat_id}')
+    context.bot_data['logger'].warn(f'Send notification for chat_id: {notification.chat_id}')
     await context.bot.send_message(
         notification.chat_id,
         text=f"Тэкс, тебе надо выпить таблетки {notification.name} ({notification.dosage}).",
